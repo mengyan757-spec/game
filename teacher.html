@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>教师统计页面</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="utils.js"></script>
+</head>
+<body>
+  <div class="festival-decoration"></div>
+
+  <!-- 顶部导航 -->
+  <nav class="nav-bar">
+    <button class="nav-back" onclick="window.location.href='index.html'">← 返回首页</button>
+    <span class="nav-title">👩‍🏫 教师统计页面</span>
+    <span style="font-size: 0.85rem; color: var(--color-text-light);">数据分析</span>
+  </nav>
+
+  <main class="container-wide">
+    <!-- 总览卡片 -->
+    <div class="animate-fade-in-up" style="margin-bottom: 20px;">
+      <div class="card chinese-border" style="padding: 24px;">
+        <h2 class="section-title">📊 班级学习总览</h2>
+        <div id="summaryCards" style="margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px;"></div>
+      </div>
+    </div>
+
+    <!-- 按钮操作区 -->
+    <div class="animate-fade-in-up" style="animation-delay: 0.1s; margin-bottom: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
+      <button class="btn btn-secondary" onclick="copyTableAsExcel()">📋 一键复制 Excel 表格</button>
+      <button class="btn btn-outline" onclick="downloadCSV()">📥 下载 CSV 文件</button>
+      <button class="btn btn-ghost" onclick="refreshData()">🔄 刷新数据</button>
+    </div>
+
+    <!-- 答题记录表 -->
+    <div class="animate-fade-in-up" style="animation-delay: 0.2s; margin-bottom: 20px;">
+      <div class="card chinese-border" style="padding: 24px;">
+        <h2 class="section-title">📝 答题闯关记录</h2>
+        <div class="table-wrap" style="margin-top: 16px;">
+          <table id="quizTable">
+            <thead>
+              <tr>
+                <th>学生姓名</th>
+                <th>日期</th>
+                <th>时间</th>
+                <th>题目数</th>
+                <th>正确数</th>
+                <th>错误数</th>
+                <th>正确率</th>
+                <th>评价</th>
+              </tr>
+            </thead>
+            <tbody id="quizTableBody">
+              <tr><td colspan="8" style="text-align: center; color: var(--color-text-light); padding: 20px;">暂无答题记录</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 拼图记录表 -->
+    <div class="animate-fade-in-up" style="animation-delay: 0.3s; margin-bottom: 20px;">
+      <div class="card chinese-border" style="padding: 24px;">
+        <h2 class="section-title">🧩 拼图闯关记录</h2>
+        <div class="table-wrap" style="margin-top: 16px;">
+          <table id="puzzleTable">
+            <thead>
+              <tr>
+                <th>学生姓名</th>
+                <th>日期</th>
+                <th>主题</th>
+                <th>难度</th>
+                <th>网格</th>
+                <th>用时</th>
+                <th>步数</th>
+              </tr>
+            </thead>
+            <tbody id="puzzleTableBody">
+              <tr><td colspan="7" style="text-align: center; color: var(--color-text-light); padding: 20px;">暂无拼图记录</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 拖拽记录表 -->
+    <div class="animate-fade-in-up" style="animation-delay: 0.4s; margin-bottom: 20px;">
+      <div class="card chinese-border" style="padding: 24px;">
+        <h2 class="section-title">🤝 拖拽匹配记录</h2>
+        <div class="table-wrap" style="margin-top: 16px;">
+          <table id="dragTable">
+            <thead>
+              <tr>
+                <th>学生姓名</th>
+                <th>日期</th>
+                <th>关卡</th>
+                <th>题目数</th>
+                <th>正确数</th>
+                <th>尝试次数</th>
+                <th>正确率</th>
+              </tr>
+            </thead>
+            <tbody id="dragTableBody">
+              <tr><td colspan="7" style="text-align: center; color: var(--color-text-light); padding: 20px;">暂无拖拽记录</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 双人对弈记录表 -->
+    <div class="animate-fade-in-up" style="animation-delay: 0.45s; margin-bottom: 20px;">
+      <div class="card chinese-border" style="padding: 24px;">
+        <h2 class="section-title">⚔️ 双人对弈记录</h2>
+        <div class="table-wrap" style="margin-top: 16px;">
+          <table id="vsTable">
+            <thead>
+              <tr>
+                <th>日期</th><th>玩家一</th><th>玩家二</th>
+                <th>比分</th><th>回合数</th><th>胜者</th>
+              </tr>
+            </thead>
+            <tbody id="vsTableBody">
+              <tr><td colspan="6" style="text-align: center; color: var(--color-text-light); padding: 20px;">暂无对弈记录</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 组队闯关记录表 -->
+    <div class="animate-fade-in-up" style="animation-delay: 0.48s; margin-bottom: 20px;">
+      <div class="card chinese-border" style="padding: 24px;">
+        <h2 class="section-title">🤝 组队闯关记录</h2>
+        <div class="table-wrap" style="margin-top: 16px;">
+          <table id="teamTable">
+            <thead>
+              <tr>
+                <th>日期</th><th>队名</th><th>成员</th>
+                <th>题目数</th><th>正确数</th><th>得分</th><th>正确率</th>
+              </tr>
+            </thead>
+            <tbody id="teamTableBody">
+              <tr><td colspan="7" style="text-align: center; color: var(--color-text-light); padding: 20px;">暂无组队记录</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 高频错题分析 -->
+    <div class="animate-fade-in-up" style="animation-delay: 0.5s; margin-bottom: 40px;">
+      <div class="card chinese-border" style="padding: 24px;">
+        <h2 class="section-title">⚠️ 高频错题分析</h2>
+        <div id="errorAnalysis" style="margin-top: 16px;"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ==================== 初始化 ====================
+    const studentName = getStudentName();
+
+    function refreshData() {
+      renderSummary();
+      renderQuizTable();
+      renderPuzzleTable();
+      renderDragTable();
+      renderVsTable();
+      renderTeamTable();
+      renderErrorAnalysis();
+      showToast('数据已刷新 ✅');
+    }
+
+    // ==================== 渲染总览卡片 ====================
+    function renderSummary() {
+      const quizRecords = getQuizRecords();
+      const puzzleRecords = getLevelRecords('puzzle');
+      const dragRecords = getLevelRecords('drag');
+      const vsRecords = getVsRecords();
+      const teamRecords = getTeamRecords();
+      const errorBook = getErrorBook();
+
+      const totalGames = quizRecords.length + puzzleRecords.length + dragRecords.length
+                       + vsRecords.length + teamRecords.length;
+      const accuracy = calcAccuracy(quizRecords);
+
+      const avgTime = puzzleRecords.length > 0
+        ? Math.round(puzzleRecords.reduce((s, r) => s + (r.time || 0), 0) / puzzleRecords.length)
+        : 0;
+
+      document.getElementById('summaryCards').innerHTML = `
+        <div style="text-align: center; padding: 16px; background: #E8F8F5; border-radius: 12px;">
+          <div style="font-size: 1.8rem;">🎮</div>
+          <div style="font-size: 1.5rem; font-weight: 900; color: #27AE60;">${totalGames}</div>
+          <div style="font-size: 0.85rem;">总闯关次数</div>
+        </div>
+        <div style="text-align: center; padding: 16px; background: #FEF5E7; border-radius: 12px;">
+          <div style="font-size: 1.8rem;">📊</div>
+          <div style="font-size: 1.5rem; font-weight: 900; color: var(--color-primary);">${accuracy}%</div>
+          <div style="font-size: 0.85rem;">答题正确率</div>
+        </div>
+        <div style="text-align: center; padding: 16px; background: #FDEDEC; border-radius: 12px;">
+          <div style="font-size: 1.8rem;">📕</div>
+          <div style="font-size: 1.5rem; font-weight: 900; color: #E74C3C;">${errorBook.length}</div>
+          <div style="font-size: 0.85rem;">错题总数</div>
+        </div>
+        <div style="text-align: center; padding: 16px; background: #EBF5FB; border-radius: 12px;">
+          <div style="font-size: 1.8rem;">⏱️</div>
+          <div style="font-size: 1.5rem; font-weight: 900; color: #2980B9;">${avgTime > 0 ? formatTime(avgTime) : '--'}</div>
+          <div style="font-size: 0.85rem;">拼图平均用时</div>
+        </div>
+        <div style="text-align: center; padding: 16px; background: #F4ECF7; border-radius: 12px;">
+          <div style="font-size: 1.8rem;">⚔️</div>
+          <div style="font-size: 1.5rem; font-weight: 900; color: #8E44AD;">${vsRecords.length}</div>
+          <div style="font-size: 0.85rem;">对弈次数</div>
+        </div>
+        <div style="text-align: center; padding: 16px; background: #E8F8F5; border-radius: 12px;">
+          <div style="font-size: 1.8rem;">🤝</div>
+          <div style="font-size: 1.5rem; font-weight: 900; color: #1ABC9C;">${teamRecords.length}</div>
+          <div style="font-size: 0.85rem;">组队次数</div>
+        </div>
+      `;
+    }
+
+    // ==================== 渲染答题记录表 ====================
+    function renderQuizTable() {
+      const records = getQuizRecords();
+      const tbody = document.getElementById('quizTableBody');
+
+      if (records.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--color-text-light); padding: 20px;">暂无答题记录</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = records.slice().reverse().map(r => {
+        let rating = '';
+        const a = r.accuracy || (r.questionCount > 0 ? Math.round((r.correctCount / r.questionCount) * 100) : 0);
+        if (a >= 90) rating = '🌟 优秀';
+        else if (a >= 70) rating = '👍 良好';
+        else if (a >= 50) rating = '📚 需努力';
+        else rating = '⚠️ 需辅导';
+
+        return `
+          <tr>
+            <td>${studentName}</td>
+            <td>${r.date}</td>
+            <td>${r.time}</td>
+            <td style="text-align:center;">${r.questionCount}</td>
+            <td style="text-align:center;color:#27AE60;">${r.correctCount}</td>
+            <td style="text-align:center;color:#E74C3C;">${r.wrongCount}</td>
+            <td style="text-align:center;font-weight:700;">${a}%</td>
+            <td>${rating}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // ==================== 渲染拼图记录表 ====================
+    function renderPuzzleTable() {
+      const records = getLevelRecords('puzzle');
+      const tbody = document.getElementById('puzzleTableBody');
+
+      if (records.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--color-text-light); padding: 20px;">暂无拼图记录</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = records.slice().reverse().map(r => `
+        <tr>
+          <td>${studentName}</td>
+          <td>${r.date}</td>
+          <td>${r.theme}</td>
+          <td style="text-align:center;">${r.difficulty === 'easy' ? '⭐' : r.difficulty === 'medium' ? '⭐⭐' : '⭐⭐⭐'}</td>
+          <td style="text-align:center;">${r.grid}×${r.grid}</td>
+          <td style="text-align:center;">${formatTime(r.time || 0)}</td>
+          <td style="text-align:center;">${r.moves}</td>
+        </tr>
+      `).join('');
+    }
+
+    // ==================== 渲染拖拽记录表 ====================
+    function renderDragTable() {
+      const records = getLevelRecords('drag');
+      const tbody = document.getElementById('dragTableBody');
+
+      if (records.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--color-text-light); padding: 20px;">暂无拖拽记录</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = records.slice().reverse().map(r => {
+        const ratio = r.totalItems > 0 ? Math.round((r.correctPlaced / r.totalItems) * 100) : 0;
+        return `
+          <tr>
+            <td>${studentName}</td>
+            <td>${r.date}</td>
+            <td>${r.level}</td>
+            <td style="text-align:center;">${r.totalItems}</td>
+            <td style="text-align:center;color:#27AE60;">${r.correctPlaced}</td>
+            <td style="text-align:center;">${r.attempts}</td>
+            <td style="text-align:center;font-weight:700;">${ratio}%</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // ==================== 渲染双人对弈记录表 ====================
+    function renderVsTable() {
+      const records = getVsRecords();
+      const tbody = document.getElementById('vsTableBody');
+      if (records.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--color-text-light); padding: 20px;">暂无对弈记录</td></tr>';
+        return;
+      }
+      tbody.innerHTML = records.slice().reverse().map(r => `
+        <tr>
+          <td>${r.date}</td>
+          <td>${r.player1}</td>
+          <td>${r.player2}</td>
+          <td style="text-align:center;font-weight:700;">${r.p1Score} : ${r.p2Score}</td>
+          <td style="text-align:center;">${r.totalRounds || '-'}</td>
+          <td style="font-weight:700;${r.winner === '平局' ? 'color:#F39C12;' : 'color:#27AE60;'}">${r.winner || '-'}</td>
+        </tr>
+      `).join('');
+    }
+
+    // ==================== 渲染组队闯关记录表 ====================
+    function renderTeamTable() {
+      const records = getTeamRecords();
+      const tbody = document.getElementById('teamTableBody');
+      if (records.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--color-text-light); padding: 20px;">暂无组队记录</td></tr>';
+        return;
+      }
+      tbody.innerHTML = records.slice().reverse().map(r => {
+        const ratio = r.totalQuestions > 0 ? Math.round((r.correctCount / r.totalQuestions) * 100) : 0;
+        return `
+          <tr>
+            <td>${r.date}</td>
+            <td style="font-weight:600;">🤝 ${r.teamName}</td>
+            <td>${(r.members || []).join('、')}</td>
+            <td style="text-align:center;">${r.totalQuestions}</td>
+            <td style="text-align:center;color:#27AE60;">${r.correctCount}</td>
+            <td style="text-align:center;font-weight:700;">${r.score || '--'}</td>
+            <td style="text-align:center;font-weight:700;">${ratio}%</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // ==================== 渲染高频错题分析 ====================
+    function renderErrorAnalysis() {
+      const errorBook = getErrorBook();
+      const container = document.getElementById('errorAnalysis');
+
+      if (errorBook.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--color-text-light); padding: 20px;">🎉 没有错题记录！学生们掌握得很好！</p>';
+        return;
+      }
+
+      // 按节日统计
+      const festivalStats = {};
+      errorBook.forEach(e => {
+        if (!festivalStats[e.festival]) {
+          festivalStats[e.festival] = { count: 0, questions: [] };
+        }
+        festivalStats[e.festival].count++;
+        festivalStats[e.festival].questions.push(e);
+      });
+
+      const sorted = Object.entries(festivalStats).sort((a, b) => b[1].count - a[1].count);
+
+      container.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          ${sorted.map(([fid, stat]) => {
+            const festival = FESTIVAL_DATA[fid];
+            if (!festival) return '';
+            const maxCount = sorted[0][1].count;
+            const barWidth = Math.round((stat.count / maxCount) * 100);
+            return `
+              <div>
+                <div class="flex-between" style="margin-bottom: 4px;">
+                  <span style="font-weight: 600;">
+                    ${festival.emoji} ${festival.name}
+                  </span>
+                  <span style="color: #E74C3C; font-weight: 700;">${stat.count} 道错题</span>
+                </div>
+                <div class="progress-bar" style="height: 14px;">
+                  <div class="progress-fill" style="width: ${barWidth}%; background: linear-gradient(90deg, #E74C3C, #F39C12);"></div>
+                </div>
+                <div style="margin-top: 6px; font-size: 0.85rem; color: var(--color-text-light);">
+                  ${stat.questions.slice(0, 3).map(q => `"${q.question}"`).join('；')}
+                  ${stat.questions.length > 3 ? '...等' : ''}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    // ==================== 一键复制为 Excel 可粘贴表格 ====================
+    function copyTableAsExcel() {
+      const quizRecords = getQuizRecords();
+      const puzzleRecords = getLevelRecords('puzzle');
+      const dragRecords = getLevelRecords('drag');
+      const vsRecords = getVsRecords();
+      const teamRecords = getTeamRecords();
+      const errorBook = getErrorBook();
+
+      // 构建 TSV 格式（Excel 可直接粘贴）
+      let tsv = '学生姓名\t日期\t时间\t类型\t详情\n';
+
+      quizRecords.forEach(r => {
+        const a = r.accuracy || (r.questionCount > 0 ? Math.round((r.correctCount / r.questionCount) * 100) : 0);
+        tsv += `${studentName}\t${r.date}\t${r.time}\t答题闯关\t${r.questionCount}题 正确${r.correctCount}题 正确率${a}%\n`;
+      });
+
+      puzzleRecords.forEach(r => {
+        tsv += `${studentName}\t${r.date}\t${r.time}\t拼图游戏\t${r.theme} ${r.grid}×${r.grid} 用时${formatTime(r.time || 0)} 步数${r.moves}\n`;
+      });
+
+      dragRecords.forEach(r => {
+        const ratio = r.totalItems > 0 ? Math.round((r.correctPlaced / r.totalItems) * 100) : 0;
+        tsv += `${studentName}\t${r.date}\t${r.time}\t拖拽匹配\t${r.level} 正确${r.correctPlaced}/${r.totalItems} 正确率${ratio}%\n`;
+      });
+
+      vsRecords.forEach(r => {
+        tsv += `${studentName}\t${r.date}\t${r.time}\t双人对弈\t${r.player1}(${r.p1Score}) vs ${r.player2}(${r.p2Score}) 胜者:${r.winner}\n`;
+      });
+
+      teamRecords.forEach(r => {
+        const ratio = r.totalQuestions > 0 ? Math.round((r.correctCount / r.totalQuestions) * 100) : 0;
+        tsv += `${studentName}\t${r.date}\t${r.time}\t组队闯关\t${r.teamName} 成员:${(r.members||[]).join('/')} 得分${r.score} 正确率${ratio}%\n`;
+      });
+
+      // 添加错题统计
+      if (errorBook.length > 0) {
+        tsv += '\n错题统计\n';
+        tsv += '题目\t所属节日\t正确答案\t学生答案\n';
+        errorBook.forEach(e => {
+          const festival = FESTIVAL_DATA[e.festival];
+          tsv += `${e.question}\t${festival ? festival.name : e.festival}\t${e.options[e.correctAnswer]}\t${e.options[e.userAnswer]}\n`;
+        });
+      }
+
+      // 复制到剪贴板
+      navigator.clipboard.writeText(tsv).then(() => {
+        showToast('✅ 表格已复制！打开 Excel → 粘贴即可', 3000);
+      }).catch(() => {
+        // 降级：显示在 textarea 中
+        const textarea = document.createElement('textarea');
+        textarea.value = tsv;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+          document.execCommand('copy');
+          showToast('✅ 表格已复制！打开 Excel → 粘贴即可', 3000);
+        } catch (err) {
+          showToast('❌ 复制失败，请尝试下载 CSV', 3000);
+        }
+        document.body.removeChild(textarea);
+      });
+    }
+
+    // ==================== 下载 CSV 文件 ====================
+    function downloadCSV() {
+      const quizRecords = getQuizRecords();
+      const puzzleRecords = getLevelRecords('puzzle');
+      const dragRecords = getLevelRecords('drag');
+      const vsRecords = getVsRecords();
+      const teamRecords = getTeamRecords();
+
+      let csv = '学生姓名,日期,时间,类型,详情\n';
+
+      quizRecords.forEach(r => {
+        const a = r.accuracy || (r.questionCount > 0 ? Math.round((r.correctCount / r.questionCount) * 100) : 0);
+        csv += `"${studentName}","${r.date}","${r.time}","答题闯关","${r.questionCount}题 正确${r.correctCount}题 正确率${a}%"\n`;
+      });
+
+      puzzleRecords.forEach(r => {
+        csv += `"${studentName}","${r.date}","${r.time}","拼图游戏","${r.theme} ${r.grid}×${r.grid} 用时${formatTime(r.time || 0)} 步数${r.moves}"\n`;
+      });
+
+      dragRecords.forEach(r => {
+        const ratio = r.totalItems > 0 ? Math.round((r.correctPlaced / r.totalItems) * 100) : 0;
+        csv += `"${studentName}","${r.date}","${r.time}","拖拽匹配","${r.level} 正确${r.correctPlaced}/${r.totalItems} 正确率${ratio}%"\n`;
+      });
+
+      vsRecords.forEach(r => {
+        csv += `"${studentName}","${r.date}","${r.time}","双人对弈","${r.player1}(${r.p1Score}) vs ${r.player2}(${r.p2Score}) 胜者:${r.winner}"\n`;
+      });
+
+      teamRecords.forEach(r => {
+        const ratio = r.totalQuestions > 0 ? Math.round((r.correctCount / r.totalQuestions) * 100) : 0;
+        csv += `"${studentName}","${r.date}","${r.time}","组队闯关","${r.teamName} 成员:${(r.members||[]).join('/')} 得分${r.score} 正确率${ratio}%"\n`;
+      });
+
+      // 添加 BOM 解决中文乱码
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `传统节日闯关记录_${getDateString()}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('✅ CSV 文件已下载');
+    }
+
+    // ==================== 初始渲染 ====================
+    renderSummary();
+    renderQuizTable();
+    renderPuzzleTable();
+    renderDragTable();
+    renderVsTable();
+    renderTeamTable();
+    renderErrorAnalysis();
+  </script>
+</body>
+</html>
