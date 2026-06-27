@@ -1,547 +1,273 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智慧门禁守卫闯关游戏 - 九年级信息科技</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中华传统节日文化闯关小游戏</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="utils.js"></script>
 </head>
 <body>
-    <!-- 开始界面 -->
-    <div id="start-screen" class="screen active">
-        <div class="container">
-            <div class="logo-section">
-                <div class="icon-container">
-                    <div class="shield-icon">🛡️</div>
-                    <div class="face-scan-animation">
-                        <div class="scan-line"></div>
-                        <div class="scan-corner top-left"></div>
-                        <div class="scan-corner top-right"></div>
-                        <div class="scan-corner bottom-left"></div>
-                        <div class="scan-corner bottom-right"></div>
-                    </div>
-                </div>
-                <h1 class="game-title">智慧门禁守卫闯关游戏</h1>
-                <p class="subtitle">人脸识别 · 我为校园增智慧</p>
-            </div>
+  <div class="festival-decoration"></div>
 
-            <div class="info-card">
-                <h3>📚 课程信息</h3>
-                <p><strong>适配课程：</strong>九年级苏科版信息科技</p>
-                <p><strong>课题：</strong>《人脸识别 —— 我为校园增智慧》</p>
-                <p><strong>教学环节：</strong>在线虚拟仿真实验</p>
-            </div>
+  <main class="container">
 
-            <div class="mission-card">
-                <h3>🎯 你的任务</h3>
-                <p>你是校园<span class="highlight">AI门禁守卫员</span>，负责调试全新的人脸识别门禁系统。</p>
-                <p>完成三大核心任务：<strong>数据采集 → 模型训练 → 识别测试</strong></p>
-            </div>
+    <!-- ========== 第一屏：入口选择 ========== -->
+    <div id="step1" class="animate-fade-in">
+      <div class="text-center" style="margin-top: 50px;">
+        <div style="font-size:3.5rem;">🏮</div>
+        <h1 class="page-title" style="font-size:2rem;">中华传统节日文化<br>闯关小游戏</h1>
+        <p style="color:var(--color-text-light);margin-top:8px;font-size:0.95rem;">了解传统节日 · 学习中华文化</p>
+      </div>
 
-            <div class="levels-preview">
-                <div class="level-preview">
-                    <div class="level-num">01</div>
-                    <h4>数据采集筛选</h4>
-                    <p>筛选优质人脸样本</p>
-                </div>
-                <div class="level-arrow">→</div>
-                <div class="level-preview">
-                    <div class="level-num">02</div>
-                    <h4>模型训练调试</h4>
-                    <p>训练AI识别模型</p>
-                </div>
-                <div class="level-arrow">→</div>
-                <div class="level-preview">
-                    <div class="level-num">03</div>
-                    <h4>门禁实战识别</h4>
-                    <p>检验门禁系统效果</p>
-                </div>
-            </div>
+      <!-- 节日标签（动画） -->
+      <div class="festival-row" style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:24px 0;perspective:600px;">
+        <span class="festival-tag tag-0" data-text="🧧 春节" style="background:#FDEDEC;color:#E74C3C;"></span>
+        <span class="festival-tag tag-1" data-text="🏮 元宵" style="background:#FEF5E7;color:#F39C12;"></span>
+        <span class="festival-tag tag-2" data-text="🌿 清明" style="background:#E8F8F5;color:#27AE60;"></span>
+        <span class="festival-tag tag-3" data-text="🐲 端午" style="background:#EBF5FB;color:#2980B9;"></span>
+        <span class="festival-tag tag-4" data-text="🥮 中秋" style="background:#FEF9E7;color:#D4AC0D;"></span>
+        <span class="festival-tag tag-5" data-text="💫 七夕" style="background:#F4ECF7;color:#8E44AD;"></span>
+        <span class="festival-tag tag-6" data-text="🏔️ 重阳" style="background:#FDF2E9;color:#E67E22;"></span>
+        <span class="festival-tag tag-7" data-text="❄️ 冬至" style="background:#E8F8F5;color:#1ABC9C;"></span>
+      </div>
 
-            <button id="start-btn" class="primary-btn pulse-animation" onclick="startGame()">
-                🚀 开始挑战
-            </button>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:30px;">
+        <!-- 学生入口 - 大按钮 -->
+        <button class="btn btn-primary" onclick="goStep2()"
+          style="width:260px;padding:24px;font-size:1.3rem;border-radius:20px;
+                 flex-direction:column;display:flex;align-items:center;gap:6px;">
+          <span style="font-size:2.5rem;">🎒</span>
+          <span>学生入口</span>
+          <span style="font-size:0.75rem;opacity:0.8;">开始闯关学习</span>
+        </button>
 
-            <div class="knowledge-tip">
-                <span class="tip-icon">💡</span>
-                <span>知识点预告：高质量、多样本是AI精准识别的基础</span>
-            </div>
-        </div>
+        <!-- 教师入口 - 小按钮 -->
+        <a href="teacher.html" class="btn btn-ghost"
+          style="width:200px;padding:14px;font-size:0.95rem;border-radius:14px;
+                 flex-direction:column;display:flex;align-items:center;gap:4px;text-decoration:none;">
+          <span style="font-size:1.5rem;">👩‍🏫</span>
+          <span>教师入口</span>
+          <span style="font-size:0.7rem;opacity:0.6;">查看学习统计</span>
+        </a>
+      </div>
     </div>
 
-    <!-- 关卡选择界面 -->
-    <div id="level-select-screen" class="screen level-select-page">
-        <!-- 顶部导航栏 -->
-        <header class="select-header">
-            <button class="back-btn" onclick="showScreen('start-screen')">← 返回首页</button>
-            <h2 class="page-title">🎮 选择关卡</h2>
-            <div class="progress-mini">
-                <span>进度：</span>
-                <span id="mini-progress-text">0/3</span>
-            </div>
-        </header>
+    <!-- ========== 第二屏：模式选择 ========== -->
+    <div id="step2" class="hidden animate-fade-in">
+      <div style="text-align:center;margin-top:10px;">
+        <button class="nav-back" onclick="goStep1()" style="margin-bottom:10px;">← 返回</button>
+      </div>
 
-        <!-- 主内容区域 - 左右分栏布局 -->
-        <div class="select-main-content">
-            <!-- 左侧：关卡卡片区域 -->
-            <div class="levels-area">
-                <h3 class="section-title">📋 任务列表</h3>
-                
-                <div class="level-cards-horizontal">
-                    <div class="level-card-modern" id="level1-card" onclick="selectLevel(1)">
-                        <div class="card-visual level1-bg">
-                            <div class="card-icon">📷</div>
-                            <div class="card-number">01</div>
-                            <div class="card-lock" id="level1-lock"></div>
-                        </div>
-                        <div class="card-info">
-                            <h4>人脸数据采集</h4>
-                            <p>筛选优质人脸样本</p>
-                            <div class="card-meta">
-                                <span class="meta-item">⏱️ 5分钟</span>
-                                <span class="meta-item">🎯 12-15张</span>
-                            </div>
-                        </div>
-                        <div class="card-status-bar" id="level1-status-bar"></div>
-                    </div>
+      <div class="text-center" style="margin-top:20px;">
+        <div style="font-size:3rem;">🎒</div>
+        <h2 class="page-title">选择闯关模式</h2>
+        <p class="page-subtitle">你想一个人闯关，还是和朋友一起？</p>
+      </div>
 
-                    <div class="connector-arrow">
-                        <div class="arrow-line"></div>
-                        <div class="arrow-head">▶</div>
-                    </div>
+      <!-- 名字输入 -->
+      <div style="max-width:300px;margin:0 auto 24px;">
+        <input type="text" id="studentNameInput" placeholder="请输入你的姓名" maxlength="10"
+          style="width:100%;padding:12px;border:2px solid #E8D5C4;border-radius:12px;
+                 font-size:1rem;font-family:inherit;text-align:center;outline:none;">
+        <p id="nameWarn" style="text-align:center;color:#E74C3C;font-size:0.8rem;margin-top:4px;display:none;">
+          请先输入名字
+        </p>
+      </div>
 
-                    <div class="level-card-modern locked" id="level2-card" onclick="selectLevel(2)">
-                        <div class="card-visual level2-bg">
-                            <div class="card-icon">🤖</div>
-                            <div class="card-number">02</div>
-                            <div class="card-lock" id="level2-lock">🔒</div>
-                        </div>
-                        <div class="card-info">
-                            <h4>AI模型训练</h4>
-                            <p>训练人脸识别模型</p>
-                            <div class="card-meta">
-                                <span class="meta-item">⏱️ 8分钟</span>
-                                <span class="meta-item">🎯 ≥90%</span>
-                            </div>
-                        </div>
-                        <div class="card-status-bar" id="level2-status-bar"></div>
-                    </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;">
+        <!-- 单人闯关 -->
+        <button class="btn" onclick="goStep3('single')"
+          style="width:260px;padding:22px;border-radius:20px;flex-direction:column;display:flex;
+                 align-items:center;gap:6px;background:linear-gradient(135deg,#E74C3C,#C0392B);
+                 color:#FFF;font-size:1.2rem;box-shadow:0 4px 18px rgba(231,76,60,0.3);">
+          <span style="font-size:2.2rem;">🎮</span>
+          <span>单人闯关</span>
+          <span style="font-size:0.75rem;opacity:0.8;">答题 · 拼图 · 拖拽匹配</span>
+        </button>
 
-                    <div class="connector-arrow">
-                        <div class="arrow-line"></div>
-                        <div class="arrow-head">▶</div>
-                    </div>
-
-                    <div class="level-card-modern locked" id="level3-card" onclick="selectLevel(3)">
-                        <div class="card-visual level3-bg">
-                            <div class="card-icon">🚪</div>
-                            <div class="card-number">03</div>
-                            <div class="card-lock" id="level3-lock">🔒</div>
-                        </div>
-                        <div class="card-info">
-                            <h4>门禁实战识别</h4>
-                            <p>测试门禁系统效果</p>
-                            <div class="card-meta">
-                                <span class="meta-item">⏱️ 10分钟</span>
-                                <span class="meta-item">🎯 ≥90%</span>
-                            </div>
-                        </div>
-                        <div class="card-status-bar" id="level3-status-bar"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 右侧：进度和说明区域 -->
-            <div class="sidebar-area">
-                <!-- 总体进度面板 -->
-                <div class="progress-panel">
-                    <h3 class="panel-title">📊 学习进度</h3>
-                    <div class="circular-progress">
-                        <svg viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" r="45" fill="none" stroke="#e0e0e0" stroke-width="8"/>
-                            <circle cx="50" cy="50" r="45" fill="none" stroke="url(#gradient)" stroke-width="8"
-                                    stroke-dasharray="283" stroke-dashoffset="283" 
-                                    id="progress-circle"
-                                    transform="rotate(-90 50 50)"
-                                    style="transition: stroke-dashoffset 0.5s ease;"/>
-                            <defs>
-                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%" style="stop-color:#4A90E2"/>
-                                    <stop offset="100%" style="stop-color:#764ba2"/>
-                                </linearGradient>
-                            </defs>
-                        </svg>
-                        <div class="progress-text-center">
-                            <span class="progress-percent" id="progress-percent">0%</span>
-                            <span class="progress-label">完成</span>
-                        </div>
-                    </div>
-                    <div class="level-checklist" id="level-checklist">
-                        <div class="check-item" data-level="1">
-                            <span class="check-box">○</span>
-                            <span class="check-text">数据采集关</span>
-                            <span class="check-status pending">待完成</span>
-                        </div>
-                        <div class="check-item" data-level="2">
-                            <span class="check-box">○</span>
-                            <span class="check-text">模型训练关</span>
-                            <span class="check-status pending">待解锁</span>
-                        </div>
-                        <div class="check-item" data-level="3">
-                            <span class="check-box">○</span>
-                            <span class="check-text">门禁实战关</span>
-                            <span class="check-status pending">待解锁</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 知识要点面板 -->
-                <div class="knowledge-panel">
-                    <h3 class="panel-title">💡 本节知识要点</h3>
-                    <ul class="knowledge-list">
-                        <li><strong>采集：</strong>高质量、多样本是AI精准识别的基础</li>
-                        <li><strong>训练：</strong>数据越多、训练越充分，模型越稳定</li>
-                        <li><strong>比对：</strong>人脸识别存在误差，需规范管理</li>
-                    </ul>
-                </div>
-
-                <!-- 快捷操作 -->
-                <div class="quick-actions">
-                    <button class="action-btn primary-action" id="btn-start-level">
-                        ▶ 开始选中的关卡
-                    </button>
-                    <button class="action-btn secondary-action" onclick="showScreen('start-screen')">
-                        🏠 回到主页
-                    </button>
-                </div>
-            </div>
-        </div>
+        <!-- 多人对弈 -->
+        <button class="btn" onclick="goStep3('multi')"
+          style="width:260px;padding:22px;border-radius:20px;flex-direction:column;display:flex;
+                 align-items:center;gap:6px;background:linear-gradient(135deg,#8E44AD,#6C3483);
+                 color:#FFF;font-size:1.2rem;box-shadow:0 4px 18px rgba(142,68,173,0.3);">
+          <span style="font-size:2.2rem;">👥</span>
+          <span>多人对弈</span>
+          <span style="font-size:0.75rem;opacity:0.8;">异地联机 · 组队闯关</span>
+        </button>
+      </div>
     </div>
 
-    <!-- 关卡一：人脸数据采集筛选 -->
-    <div id="level1-screen" class="screen">
-        <div class="game-container">
-            <header class="game-header">
-                <button class="back-btn" onclick="showScreen('level-select-screen')">← 返回</button>
-                <h2>第一关：人脸数据采集筛选</h2>
-                <div class="timer">⏱️ <span id="level1-timer">00:00</span></div>
-            </header>
+    <!-- ========== 第三屏：关卡列表 ========== -->
+    <div id="step3" class="hidden animate-fade-in">
+      <div style="text-align:center;margin-top:10px;">
+        <button class="nav-back" onclick="goStep2()">← 返回模式选择</button>
+      </div>
 
-            <div class="instruction-panel">
-                <div class="instruction-icon">📋</div>
-                <div class="instruction-content">
-                    <h3>任务说明</h3>
-                    <p>从下方20张照片中<strong>勾选合格的人脸样本</strong>。合格标准：清晰正面照、光线正常、无遮挡。</p>
-                    <p class="warning">注意：模糊、逆光、遮挡口罩、侧脸过偏、光线过暗的照片不能使用！</p>
-                </div>
-            </div>
-
-            <div class="stats-panel">
-                <div class="stat-item">
-                    <span class="stat-label">已选数量</span>
-                    <span class="stat-value" id="selected-count">0</span>
-                    <span class="stat-unit">/ 12-15张</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">噪声数据</span>
-                    <span class="stat-value error" id="noise-count">0</span>
-                    <span class="stat-unit">张</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">剩余照片</span>
-                    <span class="stat-value" id="remaining-count">20</span>
-                    <span class="stat-unit">张</span>
-                </div>
-            </div>
-
-            <div class="photo-grid" id="photo-grid">
-                <!-- 照片将通过JS动态生成 -->
-            </div>
-
-            <div class="action-panel">
-                <button class="secondary-btn" onclick="resetLevel1()">🔄 重置选择</button>
-                <button class="primary-btn" id="submit-level1" onclick="submitLevel1()">✅ 提交筛选结果</button>
-            </div>
+      <!-- 单人关卡 -->
+      <div id="singleLevels" class="hidden">
+        <div class="text-center" style="margin-top:20px;">
+          <div style="font-size:2.5rem;">🎮</div>
+          <h2 class="page-title">单人闯关</h2>
+          <p class="page-subtitle">选择关卡，开始挑战！</p>
         </div>
-
-        <!-- 弹窗提示 -->
-        <div id="level1-modal" class="modal hidden">
-            <div class="modal-content">
-                <div class="modal-icon" id="modal-icon"></div>
-                <h3 id="modal-title"></h3>
-                <p id="modal-message"></p>
-                <div class="modal-knowledge" id="modal-knowledge"></div>
-                <div class="modal-actions level1-actions">
-                    <button class="secondary-btn" onclick="closeModalAndRetryLevel1()">🔄 重新挑战</button>
-                    <button class="primary-btn" id="level1-next-btn" onclick="goToLevel2FromLevel1()">进入第二关 →</button>
-                </div>
-            </div>
+        <div style="display:flex;flex-direction:column;gap:12px;max-width:400px;margin:0 auto;">
+          <a href="game1.html" class="btn btn-primary btn-lg" style="text-decoration:none;">
+            📝 第一关 · 节日答题闯关
+          </a>
+          <a href="game2.html" class="btn btn-secondary btn-lg" style="text-decoration:none;">
+            🧩 第二关 · 节日拼图游戏
+          </a>
+          <a href="game3.html" class="btn btn-success btn-lg" style="text-decoration:none;">
+            🤝 第三关 · 习俗拖拽匹配
+          </a>
+          <a href="record.html" class="btn btn-outline btn-lg" style="text-decoration:none;">
+            📖 错题本 & 学习档案
+          </a>
         </div>
+      </div>
+
+      <!-- 多人关卡 -->
+      <div id="multiLevels" class="hidden">
+        <div class="text-center" style="margin-top:20px;">
+          <div style="font-size:2.5rem;">👥</div>
+          <h2 class="page-title">多人对弈</h2>
+          <p class="page-subtitle">和朋友一起对战闯关！</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;max-width:400px;margin:0 auto;">
+          <a href="game4.html" class="btn btn-lg" style="text-decoration:none;
+             background:linear-gradient(135deg,#8E44AD,#6C3483);color:#FFF;
+             box-shadow:0 4px 18px rgba(142,68,173,0.3);">
+            ⚔️ 第四关 · 双人对弈 PvP
+          </a>
+          <a href="game5.html" class="btn btn-lg" style="text-decoration:none;
+             background:linear-gradient(135deg,#1ABC9C,#16A085);color:#FFF;
+             box-shadow:0 4px 18px rgba(26,188,156,0.3);">
+            🤝 第五关 · 组队闯关
+          </a>
+        </div>
+      </div>
     </div>
 
-    <!-- 关卡二：AI模型训练调试 -->
-    <div id="level2-screen" class="screen">
-        <div class="game-container">
-            <header class="game-header">
-                <button class="back-btn" onclick="showScreen('level-select-screen')">← 返回</button>
-                <h2>第二关：AI模型训练调试</h2>
-                <div class="timer">⏱️ <span id="level2-timer">00:00</span></div>
-            </header>
-
-            <div class="instruction-panel">
-                <div class="instruction-icon">⚙️</div>
-                <div class="instruction-content">
-                    <h3>任务说明</h3>
-                    <p>设置<strong>训练参数</strong>，启动AI模型训练。观察数据量、迭代次数对模型准确率的影响。</p>
-                    <p class="tip">提示：数据越多、训练越充分，AI模型越稳定！</p>
-                </div>
-            </div>
-
-            <div class="training-layout">
-                <div class="params-panel">
-                    <h3>📊 训练参数设置</h3>
-                    
-                    <div class="param-group">
-                        <label for="sample-count">
-                            训练样本数量
-                            <span class="param-hint" data-tooltip="样本数量直接影响模型的泛化能力">❓</span>
-                        </label>
-                        <div class="param-control">
-                            <input type="range" id="sample-count" min="50" max="500" value="200" step="50"
-                                   oninput="updateParamDisplay('sample-count', 'sample-display')">
-                            <span class="param-value" id="sample-display">200</span> 张
-                        </div>
-                        <div class="param-options">
-                            <button class="option-btn" onclick="setSamplePreset(100, '偷懒模式')">😴 偷懒模式 (100张)</button>
-                            <button class="option-btn active" onclick="setSamplePreset(200, '标准模式')">✅ 标准模式 (200张)</button>
-                            <button class="option-btn" onclick="setSamplePreset(400, '充足模式')">💪 充足模式 (400张)</button>
-                        </div>
-                    </div>
-
-                    <div class="param-group">
-                        <label for="epoch-count">
-                            训练迭代次数
-                            <span class="param-hint" data-tooltip="迭代次数越多，模型学习越充分">❓</span>
-                        </label>
-                        <div class="param-control">
-                            <input type="range" id="epoch-count" min="10" max="100" value="50" step="10"
-                                   oninput="updateParamDisplay('epoch-count', 'epoch-display')">
-                            <span class="param-value" id="epoch-display">50</span> 次
-                        </div>
-                        <div class="param-options">
-                            <button class="option-btn" onclick="setEpochPreset(20, '快速训练')">⚡ 快速训练 (20次)</button>
-                            <button class="option-btn active" onclick="setEpochPreset(50, '标准训练')">✅ 标准训练 (50次)</button>
-                            <button class="option-btn" onclick="setEpochPreset(80, '深度训练')">🎯 深度训练 (80次)</button>
-                        </div>
-                    </div>
-
-                    <div class="param-info">
-                        <div class="info-row">
-                            <span>预估训练时间：</span>
-                            <span id="estimated-time">约15秒</span>
-                        </div>
-                        <div class="info-row">
-                            <span>预期准确率范围：</span>
-                            <span id="expected-accuracy">75% - 90%</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="training-panel">
-                    <h3>🖥️ 训练监控面板</h3>
-                    
-                    <div class="training-status" id="training-status">
-                        <div class="status-indicator idle"></div>
-                        <span>等待开始训练...</span>
-                    </div>
-
-                    <div class="progress-section">
-                        <div class="progress-header">
-                            <span>训练进度</span>
-                            <span id="training-progress-text">0%</span>
-                        </div>
-                        <div class="progress-bar-container large">
-                            <div class="progress-bar training" id="training-progress" style="width: 0%"></div>
-                        </div>
-                    </div>
-
-                    <div class="metrics-grid">
-                        <div class="metric-card">
-                            <h4>模型准确率</h4>
-                            <div class="metric-value" id="accuracy-value">--%</div>
-                            <div class="metric-chart" id="accuracy-chart"></div>
-                        </div>
-                        <div class="metric-card">
-                            <h4>Loss 损失值</h4>
-                            <div class="metric-value" id="loss-value">--</div>
-                            <div class="metric-chart" id="loss-chart"></div>
-                        </div>
-                    </div>
-
-                    <div class="training-log" id="training-log">
-                        <div class="log-entry">[系统] 准备就绪，请设置参数后点击开始训练</div>
-                    </div>
-
-                    <button class="primary-btn btn-large" id="start-training-btn" onclick="startTraining()">
-                        🚀 开始训练
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 训练完成弹窗 -->
-        <div id="training-complete-modal" class="modal hidden">
-            <div class="modal-content training-result">
-                <div class="result-rank" id="training-rank"></div>
-                <h3 id="training-result-title">训练完成！</h3>
-                <div class="result-metrics">
-                    <div class="result-metric">
-                        <span class="result-label">最终准确率</span>
-                        <span class="result-value" id="final-accuracy">--%</span>
-                    </div>
-                    <div class="result-metric">
-                        <span class="result-label">最终Loss</span>
-                        <span class="result-value" id="final-loss">--</span>
-                    </div>
-                    <div class="result-metric">
-                        <span class="result-label">训练评价</span>
-                        <span class="result-value" id="training-evaluation">--</span>
-                    </div>
-                </div>
-                <div class="modal-knowledge" id="training-knowledge"></div>
-                <div class="modal-actions">
-                    <button class="secondary-btn" onclick="retryTraining()">🔄 重新训练</button>
-                    <button class="primary-btn" onclick="goToLevel3()">进入下一关 →</button>
-                </div>
-            </div>
-        </div>
+    <!-- 底部 -->
+    <div style="text-align:center;padding:24px;color:#BAA58F;font-size:0.78rem;">
+      <p>🏫 中华传统节日文化科普教育 · 纯前端实现 · 支持异地联机</p>
     </div>
+  </main>
 
-    <!-- 关卡三：智慧门禁实战识别 -->
-    <div id="level3-screen" class="screen">
-        <div class="game-container full-screen">
-            <header class="game-header">
-                <button class="back-btn" onclick="showScreen('level-select-screen')">← 返回</button>
-                <h2>第三关：智慧门禁实战识别</h2>
-                <div class="score-display">得分: <span id="level3-score">100</span></div>
-            </header>
+  <style>
+    /* ===== 节日标签动画 ===== */
+    .festival-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 6px 14px; border-radius: 20px; font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; user-select: none;
+      opacity: 0;
+      transform: translateY(30px) scale(0.8);
+      animation: tagPopIn 0.5s ease forwards;
+      transition: all 0.3s ease;
+    }
+    .festival-tag::after { content: attr(data-text); }
 
-            <div class="door-access-layout">
-                <!-- 门禁区域 -->
-                <div class="door-area">
-                    <div class="door-frame">
-                        <div class="door-gate" id="door-gate">
-                            <div class="gate-bars">
-                                <div class="gate-bar"></div>
-                                <div class="gate-bar"></div>
-                                <div class="gate-bar"></div>
-                            </div>
-                        </div>
-                        <div class="door-scanner" id="door-scanner">
-                            <div class="scanner-light" id="scanner-light"></div>
-                            <div class="scanner-display" id="scanner-display">
-                                <span class="scanner-text" id="scanner-text">等待识别</span>
-                            </div>
-                        </div>
-                        <div class="servo-motor" id="servo-motor">
-                            <div class="servo-arm" id="servo-arm"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="person-area" id="person-area">
-                        <div class="person-avatar" id="person-avatar"></div>
-                        <div class="person-info" id="person-info">
-                            <div class="person-name" id="person-name">--</div>
-                            <div class="person-role" id="person-role">--</div>
-                        </div>
-                    </div>
-                </div>
+    .tag-0 { animation-delay: 0.05s; }
+    .tag-1 { animation-delay: 0.12s; }
+    .tag-2 { animation-delay: 0.19s; }
+    .tag-3 { animation-delay: 0.26s; }
+    .tag-4 { animation-delay: 0.33s; }
+    .tag-5 { animation-delay: 0.40s; }
+    .tag-6 { animation-delay: 0.47s; }
+    .tag-7 { animation-delay: 0.54s; }
 
-                <!-- 控制面板区域 -->
-                <div class="control-panel-area">
-                    <div class="round-counter">
-                        <span>第 <span id="round-number">1</span> / 10 轮</span>
-                    </div>
+    @keyframes tagPopIn {
+      0%   { opacity:0; transform:translateY(30px) scale(0.8) rotate(-5deg); }
+      60%  { opacity:1; transform:translateY(-3px) scale(1.08) rotate(2deg); }
+      80%  { transform:translateY(1px) scale(0.97) rotate(-1deg); }
+      100% { opacity:1; transform:translateY(0) scale(1) rotate(0); }
+    }
+    @keyframes tagFloat {
+      0%,100% { transform:translateY(0) rotate(0); }
+      25%     { transform:translateY(-6px) rotate(1deg); }
+      75%     { transform:translateY(4px) rotate(-1deg); }
+    }
+    .festival-tag:hover {
+      transform:translateY(-4px) scale(1.15) !important;
+      box-shadow:0 6px 20px rgba(0,0,0,0.15);
+      z-index:10;
+    }
+    .festival-row .festival-tag.anim-done {
+      animation: none;
+      opacity:1;
+      transform:translateY(0) scale(1);
+    }
+  </style>
 
-                    <div class="recognition-result" id="recognition-result">
-                        <div class="result-header">
-                            <h3>AI识别结果</h3>
-                            <div class="confidence-display">
-                                置信度: <span id="confidence-value">--</span>
-                            </div>
-                        </div>
-                        <div class="result-detail" id="result-detail">
-                            <div class="match-status" id="match-status">
-                                <span class="status-icon" id="match-icon">?</span>
-                                <span class="status-text" id="match-text">等待中...</span>
-                            </div>
-                            <div class="action-required">
-                                <p>判断AI识别是否正确？</p>
-                                <div class="action-buttons">
-                                    <button class="btn-correct" id="btn-correct" onclick="judgeResult(true)" disabled>
-                                        ✅ 识别正确
-                                    </button>
-                                    <button class="btn-wrong" id="btn-wrong" onclick="judgeResult(false)" disabled>
-                                        ❌ 识别错误
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+  <script>
+    // ===== 页面路由 =====
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    const singleLevels = document.getElementById('singleLevels');
+    const multiLevels = document.getElementById('multiLevels');
+    const nameInput = document.getElementById('studentNameInput');
+    const nameWarn = document.getElementById('nameWarn');
 
-                    <div class="history-log" id="history-log">
-                        <h4>识别记录</h4>
-                        <div class="log-entries" id="log-entries"></div>
-                    </div>
+    const saved = getStudentName();
+    if (saved) nameInput.value = saved;
 
-                    <button class="primary-btn btn-large" id="next-person-btn" onclick="nextPerson()" style="display:none;">
-                        下一位 →
-                    </button>
-                </div>
-            </div>
-        </div>
+    function goStep2() {
+      step1.classList.add('hidden'); step2.classList.remove('hidden'); step3.classList.add('hidden');
+      step2.classList.remove('animate-fade-in'); void step2.offsetWidth; step2.classList.add('animate-fade-in');
+    }
+    function goStep1() {
+      step1.classList.remove('hidden'); step2.classList.add('hidden'); step3.classList.add('hidden');
+      step1.classList.remove('animate-fade-in'); void step1.offsetWidth; step1.classList.add('animate-fade-in');
+    }
+    function goStep3(mode) {
+      const name = nameInput.value.trim();
+      if (!name) { nameWarn.style.display='block'; nameInput.style.borderColor='#E74C3C'; nameInput.focus(); return; }
+      nameWarn.style.display='none'; nameInput.style.borderColor='#E8D5C4'; setStudentName(name);
+      step2.classList.add('hidden'); step3.classList.remove('hidden');
+      step3.classList.remove('animate-fade-in'); void step3.offsetWidth; step3.classList.add('animate-fade-in');
+      if (mode==='single') { singleLevels.classList.remove('hidden'); multiLevels.classList.add('hidden'); }
+      else { singleLevels.classList.add('hidden'); multiLevels.classList.remove('hidden'); }
+    }
+    nameInput.addEventListener('keydown', function(e) { if (e.key==='Enter') goStep3('single'); });
+    nameInput.addEventListener('input', function() { nameWarn.style.display='none'; nameInput.style.borderColor='#E8D5C4'; });
 
-        <!-- 最终结果弹窗 -->
-        <div id="final-result-modal" class="modal hidden">
-            <div class="modal-content final-result">
-                <div class="trophy-animation" id="trophy-animation"></div>
-                <h3 id="final-title">挑战完成！</h3>
-                <div class="final-stats">
-                    <div class="final-stat">
-                        <span class="final-stat-label">总正确率</span>
-                        <span class="final-stat-value" id="final-correct-rate">--%</span>
-                    </div>
-                    <div class="final-stat">
-                        <span class="final-stat-label">正确次数</span>
-                        <span class="final-stat-value" id="final-correct-count">--/10</span>
-                    </div>
-                    <div class="final-stat">
-                        <span class="final-stat-label">获得称号</span>
-                        <span class="final-stat-value" id="final-rank">--</span>
-                    </div>
-                </div>
-                <div class="ethics-warning" id="ethics-warning">
-                    <h4>⚠️ AI伦理思考</h4>
-                    <p id="ethics-message"></p>
-                </div>
-                <div class="modal-knowledge final-knowledge">
-                    <p><strong>知识总结：</strong>通过三个关卡，你完整体验了人脸识别的<strong>「采集—训练—比对」</strong>全流程！这就是人工智能在智慧校园中的典型应用场景。</p>
-                </div>
-                <button class="primary-btn" onclick="restartGame()">🔄 再玩一次</button>
-            </div>
-        </div>
-    </div>
+    // ===== 节日标签连续动画 =====
+    (function animateTags() {
+      var tags = document.querySelectorAll('.festival-tag');
+      var floats = [
+        { amp:6,  dur:2.8, delay:0   },
+        { amp:5,  dur:3.2, delay:0.4 },
+        { amp:7,  dur:2.5, delay:0.8 },
+        { amp:4,  dur:3.0, delay:1.2 },
+        { amp:6,  dur:2.6, delay:1.6 },
+        { amp:5,  dur:3.4, delay:2.0 },
+        { amp:7,  dur:2.9, delay:2.4 },
+        { amp:4,  dur:3.1, delay:2.8 },
+      ];
 
-    <!-- 全局知识弹窗 -->
-    <div id="global-knowledge-modal" class="modal hidden">
-        <div class="modal-content knowledge-popup">
-            <div class="knowledge-icon">📚</div>
-            <h3>知识点讲解</h3>
-            <div id="global-knowledge-content"></div>
-            <button class="primary-btn" onclick="closeModal('global-knowledge-modal')">我知道了</button>
-        </div>
-    </div>
+      // 入场动画完成后开启浮动
+      setTimeout(function() {
+        tags.forEach(function(tag, i) {
+          tag.classList.add('anim-done');
+          var f = floats[i] || floats[0];
+          tag.style.animation = 'tagFloat ' + f.dur + 's ease-in-out ' + f.delay + 's infinite';
+        });
 
-    <script src="game.js"></script>
+        // 周期性随机弹跳
+        setInterval(function() {
+          var idx = Math.floor(Math.random() * tags.length);
+          var tag = tags[idx];
+          tag.style.transform = 'translateY(-12px) scale(1.1)';
+          tag.style.boxShadow = '0 8px 25px rgba(0,0,0,0.2)';
+          setTimeout(function() {
+            tag.style.transform = '';
+            tag.style.boxShadow = '';
+          }, 400);
+        }, 3000);
+      }, 700);
+    })();
+  </script>
 </body>
 </html>
