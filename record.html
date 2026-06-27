@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>错题本 & 学习档案</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="utils.js"></script>
+</head>
+<body>
+  <div class="festival-decoration"></div>
+
+  <!-- 顶部导航 -->
+  <nav class="nav-bar">
+    <button class="nav-back" onclick="window.location.href='index.html'">← 返回首页</button>
+    <span class="nav-title">📖 错题本 & 学习档案</span>
+    <span style="font-size: 0.85rem; color: var(--color-text-light);" id="studentDisplay"></span>
+  </nav>
+
+  <main class="container">
+    <!-- 学习概览 -->
+    <div class="card chinese-border animate-fade-in-up" style="margin-bottom: 20px; padding: 24px;">
+      <h2 class="section-title">📊 学习概览</h2>
+      <div id="overviewContent" style="margin-top: 16px;"></div>
+    </div>
+
+    <!-- 闯关记录 -->
+    <div class="card chinese-border animate-fade-in-up" style="animation-delay: 0.1s; margin-bottom: 20px; padding: 24px;">
+      <h2 class="section-title">🏆 闯关记录</h2>
+      <div id="recordsContent" style="margin-top: 16px;"></div>
+    </div>
+
+    <!-- 错题本 -->
+    <div class="card chinese-border animate-fade-in-up" style="animation-delay: 0.2s; margin-bottom: 20px; padding: 24px;">
+      <div class="flex-between" style="flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
+        <h2 class="section-title" style="margin-bottom: 0;">📕 错题本</h2>
+        <div style="display: flex; gap: 8px;">
+          <button id="filterAllBtn" class="btn btn-outline btn-sm active" onclick="filterErrors('all')">全部</button>
+          <button id="retakeAllBtn" class="btn btn-primary btn-sm" onclick="retakeAllErrors()">🔄 重做全部</button>
+          <button id="clearAllBtn" class="btn btn-ghost btn-sm" onclick="clearAllErrors()">🗑️ 清除错题</button>
+        </div>
+      </div>
+      <!-- 节日筛选标签 -->
+      <div id="festivalFilters" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;"></div>
+      <div id="errorBookContent"></div>
+    </div>
+
+    <!-- 错题重做弹窗 -->
+    <div id="retakeModal" class="modal-overlay hidden">
+      <div class="modal-content" style="max-width: 600px;">
+        <button class="modal-close" onclick="closeRetake()">✕</button>
+        <h3 style="text-align: center; margin-bottom: 16px;">📝 错题重做</h3>
+        <div id="retakeContent"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ==================== 初始化 ====================
+    const studentName = getStudentName();
+    if (!studentName) {
+      window.location.href = 'index.html';
+    }
+    document.getElementById('studentDisplay').textContent = '👤 ' + studentName;
+
+    let errorBook = getErrorBook();
+    let currentFilter = 'all';
+    let retakeQuestions = [];
+    let retakeIndex = 0;
+    let retakeCorrect = 0;
+
+    // ==================== 渲染学习概览 ====================
+    function renderOverview() {
+      const quizRecords = getQuizRecords();
+      const puzzleRecords = getLevelRecords('puzzle');
+      const dragRecords = getLevelRecords('drag');
+
+      const totalGames = quizRecords.length + puzzleRecords.length + dragRecords.length;
+      const accuracy = calcAccuracy(quizRecords);
+
+      // 按节日统计错误
+      const festivalErrors = {};
+      errorBook.forEach(e => {
+        const fName = getFestivalName(e.festival);
+        festivalErrors[fName] = (festivalErrors[fName] || 0) + 1;
+      });
+
+      const topErrors = Object.entries(festivalErrors)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3);
+
+      document.getElementById('overviewContent').innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px;">
+          <div style="text-align: center; padding: 16px; background: #E8F8F5; border-radius: 12px;">
+            <div style="font-size: 2rem;">🎮</div>
+            <div style="font-size: 1.5rem; font-weight: 900; color: #27AE60;">${totalGames}</div>
+            <div style="font-size: 0.85rem; color: var(--color-text-light);">总闯关次数</div>
+          </div>
+          <div style="text-align: center; padding: 16px; background: #FEF5E7; border-radius: 12px;">
+            <div style="font-size: 2rem;">📊</div>
+            <div style="font-size: 1.5rem; font-weight: 900; color: var(--color-primary);">${accuracy}%</div>
+            <div style="font-size: 0.85rem; color: var(--color-text-light);">答题正确率</div>
+          </div>
+          <div style="text-align: center; padding: 16px; background: #FDEDEC; border-radius: 12px;">
+            <div style="font-size: 2rem;">📕</div>
+            <div style="font-size: 1.5rem; font-weight: 900; color: #E74C3C;">${errorBook.length}</div>
+            <div style="font-size: 0.85rem; color: var(--color-text-light);">错题数量</div>
+          </div>
+          <div style="text-align: center; padding: 16px; background: #F4ECF7; border-radius: 12px;">
+            <div style="font-size: 2rem;">🧩</div>
+            <div style="font-size: 1.5rem; font-weight: 900; color: #8E44AD;">${puzzleRecords.length}</div>
+            <div style="font-size: 0.85rem; color: var(--color-text-light);">拼图通关</div>
+          </div>
+        </div>
+        ${topErrors.length > 0 ? `
+        <div style="margin-top: 16px; padding: 12px; background: #FEF9E7; border-radius: 12px;">
+          <p style="font-weight: 600; margin-bottom: 6px;">⚠️ 高频错题节日：</p>
+          ${topErrors.map(([name, count]) =>
+            `<span class="festival-badge" style="background:#FDEDEC;color:#E74C3C;margin-right:4px;">${name} ×${count}</span>`
+          ).join(' ')}
+        </div>
+        ` : ''}
+      `;
+    }
+
+    // ==================== 渲染闯关记录 ====================
+    function renderRecords() {
+      const quizRecords = getQuizRecords();
+      const puzzleRecords = getLevelRecords('puzzle');
+      const dragRecords = getLevelRecords('drag');
+
+      // 合并所有记录
+      const allRecords = [
+        ...quizRecords.map(r => ({ ...r, type: '📝 答题闯关', detail: `${r.questionCount}题 正确${r.correctCount}题` })),
+        ...puzzleRecords.map(r => ({ ...r, type: '🧩 拼图游戏', detail: `${r.theme} ${r.grid}×${r.grid} ${formatTime(r.time)}` })),
+        ...dragRecords.map(r => ({ ...r, type: '🤝 拖拽匹配', detail: `${r.level} 正确${r.correctPlaced}/${r.totalItems}` })),
+      ].sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time));
+
+      if (allRecords.length === 0) {
+        document.getElementById('recordsContent').innerHTML =
+          '<p style="text-align: center; padding: 24px; color: var(--color-text-light);">暂无闯关记录，快去闯关吧！🏃</p>';
+        return;
+      }
+
+      document.getElementById('recordsContent').innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 8px; max-height: 400px; overflow-y: auto;">
+          ${allRecords.slice(0, 20).map(r => `
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #FEFAF5; border-radius: 10px; flex-wrap: wrap; gap: 8px;">
+              <span>${r.type}</span>
+              <span style="font-size: 0.9rem;">${r.detail}</span>
+              <span style="font-size: 0.8rem; color: var(--color-text-light);">${r.date} ${r.time}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // ==================== 渲染错题本 ====================
+    function renderErrorBook(filter = 'all') {
+      errorBook = getErrorBook();
+      currentFilter = filter;
+
+      let filtered = errorBook;
+      if (filter !== 'all') {
+        filtered = errorBook.filter(e => e.festival === filter);
+      }
+
+      // 渲染节日筛选项
+      const festivals = [...new Set(errorBook.map(e => e.festival))];
+      const filtersDiv = document.getElementById('festivalFilters');
+      filtersDiv.innerHTML = festivals.map(fid => {
+        const f = FESTIVAL_DATA[fid];
+        return f ? `
+          <button class="btn btn-ghost btn-sm festival-filter-btn ${filter === fid ? 'active' : ''}"
+                  data-festival="${fid}" onclick="filterErrors('${fid}')"
+                  style="font-size: 0.8rem; background: ${filter === fid ? f.bgColor : ''}; color: ${filter === fid ? f.color : ''};">
+            ${f.emoji} ${f.name}
+          </button>
+        ` : '';
+      }).join('');
+
+      // 全选按钮高亮
+      document.getElementById('filterAllBtn').classList.toggle('active', filter === 'all');
+
+      if (filtered.length === 0) {
+        document.getElementById('errorBookContent').innerHTML =
+          `<p style="text-align: center; padding: 24px; color: var(--color-text-light);">
+            ${filter === 'all' ? '🎉 太棒了！没有错题！' : '这个节日没有错题哦~'}
+          </p>`;
+        return;
+      }
+
+      document.getElementById('errorBookContent').innerHTML = filtered.map((e, idx) => {
+        const festival = FESTIVAL_DATA[e.festival];
+        return `
+          <div class="card" style="margin-bottom: 12px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 8px;">
+              <span class="festival-badge" style="background:${festival.bgColor};color:${festival.color};">
+                ${festival.emoji} ${festival.name}
+              </span>
+              <span style="font-size: 0.8rem; color: var(--color-text-light);">${e.recordDate}</span>
+            </div>
+            <p style="font-weight: 700; margin-top: 8px;">📝 ${e.question}</p>
+            <div style="margin-top: 6px; font-size: 0.9rem;">
+              <p>你的回答：<span class="wrong-answer">${e.options[e.userAnswer]}</span></p>
+              <p>正确答案：<span class="correct-answer">${e.options[e.correctAnswer]}</span></p>
+            </div>
+            <p style="margin-top: 8px; font-size: 0.9rem; color: var(--color-text-light);">
+              💡 ${e.knowledge}
+            </p>
+            <button class="btn btn-ghost btn-sm" onclick="removeSingleError('${e.id}')"
+                    style="margin-top: 8px; color: #999;">
+              🗑️ 学会了，移除此题
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ==================== 按节日筛选 ====================
+    function filterErrors(festival) {
+      currentFilter = festival;
+      renderErrorBook(festival);
+    }
+
+    // ==================== 删除单个错题 ====================
+    function removeSingleError(qId) {
+      if (confirm('确定已经学会这道题了吗？')) {
+        removeErrorQuestion(qId);
+        errorBook = getErrorBook();
+        renderErrorBook(currentFilter);
+        renderOverview();
+      }
+    }
+
+    // ==================== 清空错题 ====================
+    function clearAllErrors() {
+      if (errorBook.length === 0) {
+        showToast('没有错题需要清除哦~');
+        return;
+      }
+      if (confirm(`确定要清除全部 ${errorBook.length} 道错题吗？此操作不可恢复！`)) {
+        saveData('error_book', []);
+        errorBook = [];
+        renderErrorBook('all');
+        renderOverview();
+        showToast('错题本已清空');
+      }
+    }
+
+    // ==================== 错题重做 ====================
+    function retakeAllErrors() {
+      const filtered = currentFilter === 'all' ? errorBook : errorBook.filter(e => e.festival === currentFilter);
+      if (filtered.length === 0) {
+        showToast('没有错题可以重做~');
+        return;
+      }
+
+      retakeQuestions = shuffle(filtered);
+      retakeIndex = 0;
+      retakeCorrect = 0;
+
+      document.getElementById('retakeModal').classList.remove('hidden');
+      renderRetakeQuestion();
+    }
+
+    function renderRetakeQuestion() {
+      if (retakeIndex >= retakeQuestions.length) {
+        showRetakeResult();
+        return;
+      }
+
+      const q = retakeQuestions[retakeIndex];
+      const festival = FESTIVAL_DATA[q.festival];
+      const labels = ['A', 'B', 'C', 'D'];
+
+      document.getElementById('retakeContent').innerHTML = `
+        <div style="margin-bottom: 12px;">
+          <span class="festival-badge" style="background:${festival.bgColor};color:${festival.color};">
+            ${festival.emoji} ${festival.name}
+          </span>
+          <span style="margin-left: 8px; font-size: 0.85rem; color: var(--color-text-light);">
+            第 ${retakeIndex + 1}/${retakeQuestions.length} 题
+          </span>
+        </div>
+        <div class="progress-bar" style="margin-bottom: 16px;">
+          <div class="progress-fill" style="width: ${(retakeIndex / retakeQuestions.length * 100)}%;"></div>
+        </div>
+        <h4 style="margin-bottom: 16px; line-height: 1.6;">${q.question}</h4>
+        <div id="retakeOptions">
+          ${q.options.map((opt, i) => `
+            <button class="option-btn" onclick="answerRetake(${i})">
+              <span style="display: inline-block; width: 24px; height: 24px; line-height: 24px;
+                           background: var(--color-bg); border-radius: 50%; text-align: center;
+                           font-weight: 700; font-size: 0.8rem; margin-right: 8px;">${labels[i]}</span>
+              ${opt}
+            </button>
+          `).join('')}
+        </div>
+        <div id="retakeFeedback" style="margin-top: 12px;"></div>
+        <div style="text-align: center; margin-top: 12px;">
+          <button id="retakeNextBtn" class="btn btn-primary btn-sm hidden" onclick="nextRetake()">下一题 →</button>
+        </div>
+      `;
+    }
+
+    function answerRetake(userIndex) {
+      const q = retakeQuestions[retakeIndex];
+      const isCorrect = userIndex === q.correctAnswer;
+
+      // 禁用所有选项
+      document.querySelectorAll('#retakeOptions .option-btn').forEach(b => b.disabled = true);
+
+      // 高亮
+      const allBtns = document.querySelectorAll('#retakeOptions .option-btn');
+      allBtns[q.correctAnswer].classList.add('correct');
+      if (!isCorrect) {
+        allBtns[userIndex].classList.add('wrong');
+      }
+
+      if (isCorrect) {
+        retakeCorrect++;
+        document.getElementById('retakeFeedback').innerHTML = `
+          <div class="flex-center gap-2" style="color: #27AE60;">
+            <span>🎉</span><strong>回答正确！</strong>
+          </div>
+        `;
+      } else {
+        document.getElementById('retakeFeedback').innerHTML = `
+          <div style="color: #E74C3C;">
+            <p>😢 正确答案是：<strong>${q.options[q.correctAnswer]}</strong></p>
+            <p style="margin-top: 4px; font-size: 0.9rem;">💡 ${q.knowledge}</p>
+          </div>
+        `;
+      }
+
+      document.getElementById('retakeNextBtn').classList.remove('hidden');
+    }
+
+    function nextRetake() {
+      retakeIndex++;
+      renderRetakeQuestion();
+    }
+
+    function showRetakeResult() {
+      const total = retakeQuestions.length;
+      const accuracy = Math.round((retakeCorrect / total) * 100);
+
+      // 移除答对的题
+      if (retakeCorrect > 0) {
+        // 全部重做完成且全部答对才移除
+        const retakeIds = retakeQuestions.map(q => q.id);
+        retakeIds.forEach(id => removeErrorQuestion(id));
+        errorBook = getErrorBook();
+        renderErrorBook(currentFilter);
+        renderOverview();
+      }
+
+      document.getElementById('retakeContent').innerHTML = `
+        <div style="text-align: center;">
+          <div style="font-size: 3rem;">${accuracy >= 80 ? '🎉' : '💪'}</div>
+          <h4 style="margin: 12px 0;">重做完成！</h4>
+          <p>正确：<strong style="color:#27AE60;">${retakeCorrect}</strong> / ${total}</p>
+          <p style="font-size: 1.3rem; color: var(--color-primary); font-weight: 700;">${accuracy}%</p>
+          <button class="btn btn-primary btn-sm" onclick="closeRetake()" style="margin-top: 16px;">完成</button>
+        </div>
+      `;
+    }
+
+    function closeRetake() {
+      document.getElementById('retakeModal').classList.add('hidden');
+      renderErrorBook(currentFilter);
+      renderOverview();
+    }
+
+    document.getElementById('retakeModal').addEventListener('click', function(e) {
+      if (e.target === this) closeRetake();
+    });
+
+    // ==================== 初始渲染 ====================
+    renderOverview();
+    renderRecords();
+    renderErrorBook('all');
+  </script>
+</body>
+</html>
