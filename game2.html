@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>第二关 · 节日拼图游戏</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="utils.js"></script>
+</head>
+<body>
+  <div class="festival-decoration"></div>
+
+  <!-- 顶部导航 -->
+  <nav class="nav-bar">
+    <button class="nav-back" onclick="goBack()">← 返回首页</button>
+    <span class="nav-title">🧩 第二关 · 节日拼图游戏</span>
+    <span style="font-size: 0.85rem; color: var(--color-text-light);" id="studentDisplay"></span>
+  </nav>
+
+  <main class="container">
+    <!-- 主题选择面板 -->
+    <div id="selectPanel" class="animate-fade-in-up">
+      <div class="card chinese-border" style="text-align: center; padding: 40px 24px;">
+        <div style="font-size: 4rem; margin-bottom: 12px;">🧩</div>
+        <h2 class="page-title">节日拼图游戏</h2>
+        <p class="page-subtitle">
+          观察完整图案，打乱后通过交换拼块还原！
+        </p>
+
+        <div style="margin-top: 24px; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px;">
+          <div class="card card-interactive" onclick="selectPuzzle(0)" style="text-align: center; padding: 20px;">
+            <div style="font-size: 2.5rem;">🏮</div>
+            <div style="font-weight: 700; margin-top: 8px;">红灯笼</div>
+            <div style="font-size: 0.8rem; color: var(--color-text-light);">3×3 · 元宵节</div>
+          </div>
+          <div class="card card-interactive" onclick="selectPuzzle(1)" style="text-align: center; padding: 20px;">
+            <div style="font-size: 2.5rem;">🐲</div>
+            <div style="font-weight: 700; margin-top: 8px;">粽子</div>
+            <div style="font-size: 0.8rem; color: var(--color-text-light);">3×3 · 端午节</div>
+          </div>
+          <div class="card card-interactive" onclick="selectPuzzle(2)" style="text-align: center; padding: 20px;">
+            <div style="font-size: 2.5rem;">🥮</div>
+            <div style="font-weight: 700; margin-top: 8px;">月饼</div>
+            <div style="font-size: 0.8rem; color: var(--color-text-light);">4×4 · 中秋节</div>
+          </div>
+          <div class="card card-interactive" onclick="selectPuzzle(3)" style="text-align: center; padding: 20px;">
+            <div style="font-size: 2.5rem;">🧧</div>
+            <div style="font-weight: 700; margin-top: 8px;">福字</div>
+            <div style="font-size: 0.8rem; color: var(--color-text-light);">4×4 · 春节</div>
+          </div>
+          <div class="card card-interactive" onclick="selectPuzzle(4)" style="text-align: center; padding: 20px;">
+            <div style="font-size: 2.5rem;">🐉</div>
+            <div style="font-weight: 700; margin-top: 8px;">龙头</div>
+            <div style="font-size: 0.8rem; color: var(--color-text-light);">5×5 · 端午节</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 拼图面板 -->
+    <div id="puzzlePanel" class="hidden">
+      <div class="card" style="padding: 20px; margin-bottom: 16px;">
+        <div class="flex-between" style="flex-wrap: wrap; gap: 8px;">
+          <span style="font-weight: 700;" id="puzzleInfo"></span>
+          <span>⏱️ 用时：<strong id="puzzleTimer">00:00</strong></span>
+          <span>🔄 步数：<strong id="moveCount">0</strong></span>
+          <button class="btn btn-ghost btn-sm" onclick="showOriginal()">👁️ 查看原图</button>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+        <!-- 拼图 Canvas -->
+        <canvas id="puzzleCanvas" class="chinese-border"
+                style="max-width: 100%; height: auto; cursor: pointer;"
+                oncontextmenu="return false;"></canvas>
+
+        <div class="flex-center gap-3" style="flex-wrap: wrap;">
+          <button class="btn btn-outline btn-sm" onclick="reshuffle()">🔀 重新打乱</button>
+          <button class="btn btn-primary btn-sm" onclick="selectPuzzle(-1)">🎯 换一个主题</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 完成面板 -->
+    <div id="completePanel" class="hidden">
+      <div class="card chinese-border animate-bounce-in" style="text-align: center; padding: 40px 24px;">
+        <div style="font-size: 5rem;">🎉</div>
+        <h2 class="page-title" style="color: #27AE60;">拼图完成！</h2>
+        <div style="margin: 20px 0; font-size: 1.1rem; line-height: 2;">
+          <p>🧩 主题：<strong id="completeName"></strong></p>
+          <p>⏱️ 用时：<strong id="completeTime"></strong></p>
+          <p>🔄 步数：<strong id="completeMoves"></strong></p>
+          <p style="color: var(--color-primary); font-weight: 700;" id="completeRating"></p>
+        </div>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+          <button class="btn btn-primary" onclick="selectPuzzle(-1)">🎯 换个主题</button>
+          <a href="index.html" class="btn btn-ghost">🏠 返回首页</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 原图预览弹窗 -->
+  <div id="previewModal" class="modal-overlay hidden">
+    <div class="modal-content" style="text-align: center;">
+      <button class="modal-close" onclick="closePreview()">✕</button>
+      <h3 style="margin-bottom: 16px;">👁️ 原图预览</h3>
+      <canvas id="previewCanvas"
+              style="max-width: 100%; border-radius: 8px; border: 2px solid var(--color-border);"></canvas>
+      <p style="margin-top: 12px; color: var(--color-text-light); font-size: 0.9rem;">记住图案后关闭，继续挑战！</p>
+    </div>
+  </div>
+
+  <script>
+    // ==================== 状态管理 ====================
+    const CELL_SIZE = 100;
+    let puzzleIndex = -1;
+    let gridSize = 3;
+    let board = [];        // 一维数组，board[i] = 原始位置索引（-1 代表空格）
+    let emptyIndex = 0;
+    let moves = 0;
+    let timerSeconds = 0;
+    let timerInterval = null;
+    let gameStarted = false;
+    let gameComplete = false;
+    let drawFuncName = '';
+
+    // ==================== 初始化 ====================
+    const studentName = getStudentName();
+    if (!studentName) {
+      window.location.href = 'index.html';
+    }
+    document.getElementById('studentDisplay').textContent = '👤 ' + studentName;
+
+    // ==================== 选择拼图主题 ====================
+    function selectPuzzle(index) {
+      stopTimer();
+      if (index < 0) {
+        // 返回选择面板
+        document.getElementById('selectPanel').classList.remove('hidden');
+        document.getElementById('puzzlePanel').classList.add('hidden');
+        document.getElementById('completePanel').classList.add('hidden');
+        puzzleIndex = -1;
+        return;
+      }
+
+      puzzleIndex = index;
+      const theme = PUZZLE_THEMES[index];
+      gridSize = theme.grid;
+      drawFuncName = theme.canvas;
+      moves = 0;
+      timerSeconds = 0;
+      gameStarted = false;
+      gameComplete = false;
+
+      document.getElementById('selectPanel').classList.add('hidden');
+      document.getElementById('puzzlePanel').classList.remove('hidden');
+      document.getElementById('completePanel').classList.add('hidden');
+
+      document.getElementById('puzzleInfo').textContent =
+        `${theme.name} · ${theme.festival} · ${gridSize}×${gridSize}`;
+
+      initBoard();
+      document.getElementById('moveCount').textContent = '0';
+      document.getElementById('puzzleTimer').textContent = '00:00';
+    }
+
+    // ==================== 初始化棋盘 ====================
+    function initBoard() {
+      const total = gridSize * gridSize;
+      board = [];
+      for (let i = 0; i < total - 1; i++) {
+        board.push(i);
+      }
+      board.push(-1); // 空格
+      emptyIndex = total - 1;
+
+      drawPuzzle();
+    }
+
+    // ==================== 打乱棋盘 ====================
+    function reshuffle() {
+      gameComplete = false;
+      stopTimer();
+      timerSeconds = 0;
+      moves = 0;
+      gameStarted = false;
+      document.getElementById('moveCount').textContent = '0';
+      document.getElementById('puzzleTimer').textContent = '00:00';
+
+      const total = gridSize * gridSize;
+
+      // 先还原
+      board = [];
+      for (let i = 0; i < total - 1; i++) board.push(i);
+      board.push(-1);
+      emptyIndex = total - 1;
+
+      // 通过随机移动来打乱（保证有解）
+      const directions = [
+        { dr: -1, dc: 0 }, // 上
+        { dr: 1, dc: 0 },  // 下
+        { dr: 0, dc: -1 }, // 左
+        { dr: 0, dc: 1 },  // 右
+      ];
+
+      let lastDir = null;
+      for (let i = 0; i < 200; i++) {
+        const row = Math.floor(emptyIndex / gridSize);
+        const col = emptyIndex % gridSize;
+        const validDirs = directions.filter((d, di) => {
+          if (lastDir !== null && di === (lastDir + 2) % 4) return false; // 避免回退
+          const nr = row + d.dr;
+          const nc = col + d.dc;
+          return nr >= 0 && nr < gridSize && nc >= 0 && nc < gridSize;
+        });
+
+        const dir = validDirs[Math.floor(Math.random() * validDirs.length)];
+        const nr = row + dir.dr;
+        const nc = col + dir.dc;
+        const swapIdx = nr * gridSize + nc;
+
+        [board[emptyIndex], board[swapIdx]] = [board[swapIdx], board[emptyIndex]];
+        emptyIndex = swapIdx;
+
+        lastDir = directions.indexOf(dir);
+      }
+
+      drawPuzzle();
+    }
+
+    // ==================== 绘制完整图案到离屏 Canvas ====================
+    function drawFullImage(canvas) {
+      const size = CELL_SIZE * gridSize;
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const drawer = CANVAS_DRAWERS[drawFuncName];
+      if (drawer) {
+        drawer(ctx, size, size);
+      }
+    }
+
+    // ==================== 绘制拼图 ====================
+    function drawPuzzle() {
+      const canvas = document.getElementById('puzzleCanvas');
+      const size = CELL_SIZE * gridSize;
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      // 创建离屏 Canvas 绘制完整图案
+      const offscreen = document.createElement('canvas');
+      drawFullImage(offscreen);
+
+      // 逐格绘制
+      for (let i = 0; i < board.length; i++) {
+        const val = board[i];
+        if (val === -1) {
+          // 空格 - 深色背景
+          const row = Math.floor(i / gridSize);
+          const col = i % gridSize;
+          ctx.fillStyle = '#DDD';
+          ctx.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+          ctx.strokeStyle = '#AAA';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+          continue;
+        }
+
+        const srcCol = val % gridSize;
+        const srcRow = Math.floor(val / gridSize);
+        const dstCol = i % gridSize;
+        const dstRow = Math.floor(i / gridSize);
+
+        ctx.drawImage(
+          offscreen,
+          srcCol * CELL_SIZE, srcRow * CELL_SIZE, CELL_SIZE, CELL_SIZE,
+          dstCol * CELL_SIZE, dstRow * CELL_SIZE, CELL_SIZE, CELL_SIZE
+        );
+
+        // 边框
+        ctx.strokeStyle = '#666';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(dstCol * CELL_SIZE, dstRow * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+      }
+    }
+
+    // ==================== Canvas 点击事件 ====================
+    const puzzleCanvas = document.getElementById('puzzleCanvas');
+    puzzleCanvas.addEventListener('click', function(e) {
+      if (gameComplete) return;
+
+      const rect = puzzleCanvas.getBoundingClientRect();
+      const scaleX = puzzleCanvas.width / rect.width;
+      const scaleY = puzzleCanvas.height / rect.height;
+
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
+
+      const col = Math.floor(x / CELL_SIZE);
+      const row = Math.floor(y / CELL_SIZE);
+      const clickIdx = row * gridSize + col;
+
+      // 检查是否与空格相邻
+      if (isAdjacent(clickIdx, emptyIndex)) {
+        // 交换
+        [board[clickIdx], board[emptyIndex]] = [board[emptyIndex], board[clickIdx]];
+        emptyIndex = clickIdx;
+        moves++;
+
+        if (!gameStarted) {
+          gameStarted = true;
+          startTimer();
+        }
+
+        document.getElementById('moveCount').textContent = moves;
+        drawPuzzle();
+
+        // 检查是否完成
+        if (checkComplete()) {
+          gameComplete = true;
+          stopTimer();
+          showComplete();
+        }
+      }
+    });
+
+    // ==================== 判断相邻 ====================
+    function isAdjacent(idx1, idx2) {
+      const r1 = Math.floor(idx1 / gridSize), c1 = idx1 % gridSize;
+      const r2 = Math.floor(idx2 / gridSize), c2 = idx2 % gridSize;
+      return Math.abs(r1 - r2) + Math.abs(c1 - c2) === 1;
+    }
+
+    // ==================== 检查完成 ====================
+    function checkComplete() {
+      const total = gridSize * gridSize;
+      for (let i = 0; i < total; i++) {
+        if (i === total - 1) {
+          if (board[i] !== -1) return false;
+        } else {
+          if (board[i] !== i) return false;
+        }
+      }
+      return true;
+    }
+
+    // ==================== 计时器 ====================
+    function startTimer() {
+      stopTimer();
+      timerInterval = setInterval(() => {
+        timerSeconds++;
+        document.getElementById('puzzleTimer').textContent = formatTime(timerSeconds);
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    // ==================== 显示完成 ====================
+    function showComplete() {
+      const theme = PUZZLE_THEMES[puzzleIndex];
+      document.getElementById('completeName').textContent = theme.name;
+      document.getElementById('completeTime').textContent = formatTime(timerSeconds);
+      document.getElementById('completeMoves').textContent = moves;
+
+      // 评分
+      const optimalMoves = gridSize * gridSize * 3;
+      let rating;
+      if (moves <= optimalMoves) rating = '🌟🌟🌟 完美通关！';
+      else if (moves <= optimalMoves * 1.5) rating = '🌟🌟 优秀通关！';
+      else rating = '🌟 通关成功！';
+      document.getElementById('completeRating').textContent = rating;
+
+      document.getElementById('completePanel').classList.remove('hidden');
+      document.getElementById('completePanel').scrollIntoView({ behavior: 'smooth' });
+
+      // 保存记录
+      saveLevelRecord('puzzle', {
+        theme: theme.name,
+        difficulty: theme.difficulty,
+        grid: gridSize,
+        time: timerSeconds,
+        moves: moves,
+      });
+
+      createStars();
+    }
+
+    // ==================== 原图预览 ====================
+    function showOriginal() {
+      const modal = document.getElementById('previewModal');
+      modal.classList.remove('hidden');
+      const canvas = document.getElementById('previewCanvas');
+      drawFullImage(canvas);
+    }
+
+    function closePreview() {
+      document.getElementById('previewModal').classList.add('hidden');
+    }
+
+    // 点击遮罩关闭
+    document.getElementById('previewModal').addEventListener('click', function(e) {
+      if (e.target === this) closePreview();
+    });
+
+    // ==================== 撒花 ====================
+    function createStars() {
+      const emojis = ['⭐', '🌟', '✨', '🎉', '🧩', '🎊'];
+      for (let i = 0; i < 25; i++) {
+        setTimeout(() => {
+          const star = document.createElement('span');
+          star.className = 'star-particle';
+          star.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+          star.style.left = Math.random() * 90 + '%';
+          star.style.top = (Math.random() * 40 + 40) + '%';
+          document.body.appendChild(star);
+          setTimeout(() => star.remove(), 1500);
+        }, i * 60);
+      }
+    }
+
+    // ==================== 返回 ====================
+    function goBack() {
+      stopTimer();
+      window.location.href = 'index.html';
+    }
+
+    // ==================== 初始状态 ====================
+    // 用户从选择面板开始
+  </script>
+</body>
+</html>
