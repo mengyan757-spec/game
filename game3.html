@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>第三关 · 习俗拖拽匹配游戏</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="utils.js"></script>
+</head>
+<body>
+  <div class="festival-decoration"></div>
+
+  <!-- 顶部导航 -->
+  <nav class="nav-bar">
+    <button class="nav-back" onclick="goBack()">← 返回首页</button>
+    <span class="nav-title">🤝 第三关 · 习俗拖拽匹配</span>
+    <span style="font-size: 0.85rem; color: var(--color-text-light);" id="studentDisplay"></span>
+  </nav>
+
+  <main class="container-wide">
+    <!-- 关卡选择面板 -->
+    <div id="levelSelect" class="animate-fade-in-up">
+      <div class="card chinese-border" style="text-align: center; padding: 40px 24px;">
+        <div style="font-size: 4rem; margin-bottom: 12px;">🤝</div>
+        <h2 class="page-title">习俗拖拽匹配</h2>
+        <p class="page-subtitle">
+          将左边的习俗/食物/活动拖到右边对应的节日区域！
+        </p>
+
+        <div style="margin-top: 24px; display: flex; flex-direction: column; gap: 16px; max-width: 400px; margin-left: auto; margin-right: auto;">
+          <div class="card card-interactive" onclick="selectLevel(0)" style="text-align: center; padding: 20px;">
+            <div style="font-size: 2rem;">🍽️</div>
+            <div style="font-weight: 700; margin-top: 8px;">初级 · 食物匹配</div>
+            <div style="font-size: 0.85rem; color: var(--color-text-light);">5个食物 → 5个节日</div>
+          </div>
+          <div class="card card-interactive" onclick="selectLevel(1)" style="text-align: center; padding: 20px;">
+            <div style="font-size: 2rem;">🎯</div>
+            <div style="font-weight: 700; margin-top: 8px;">中级 · 习俗匹配</div>
+            <div style="font-size: 0.85rem; color: var(--color-text-light);">6个习俗 → 6个节日</div>
+          </div>
+          <div class="card card-interactive" onclick="selectLevel(2)" style="text-align: center; padding: 20px;">
+            <div style="font-size: 2rem;">🏆</div>
+            <div style="font-weight: 700; margin-top: 8px;">高级 · 综合匹配</div>
+            <div style="font-size: 0.85rem; color: var(--color-text-light);">8个习俗 → 8个节日</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 游戏面板 -->
+    <div id="gamePanel" class="hidden">
+      <!-- 信息栏 -->
+      <div class="card" style="margin-bottom: 16px; padding: 16px 20px;">
+        <div class="flex-between" style="flex-wrap: wrap; gap: 8px;">
+          <span style="font-weight: 700;" id="levelInfo"></span>
+          <span>✅ 正确：<strong id="dragCorrect" style="color: #27AE60;">0</strong></span>
+          <span>📦 剩余：<strong id="dragRemaining">0</strong></span>
+          <span>🔄 尝试：<strong id="dragAttempts">0</strong></span>
+        </div>
+        <div class="progress-bar" style="margin-top: 10px;">
+          <div id="dragProgress" class="progress-fill" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- 拖拽区域 -->
+      <div style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: start;"
+           id="dragLayout">
+        <!-- 左侧：待匹配项 -->
+        <div class="card" style="position: sticky; top: 80px; padding: 16px;">
+          <h4 style="text-align: center; margin-bottom: 12px; color: var(--color-text-light);">
+            📦 拖动这些卡片到右边
+          </h4>
+          <div id="itemsPool" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
+
+        <!-- 右侧：节日目标区域 -->
+        <div id="dropZones" style="display: flex; flex-direction: column; gap: 16px;"></div>
+      </div>
+
+      <div style="text-align: center; margin-top: 24px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+        <button class="btn btn-outline btn-sm" onclick="resetLevel()">🔄 重新开始</button>
+        <button class="btn btn-ghost btn-sm" onclick="backToLevelSelect()">📋 选择关卡</button>
+      </div>
+    </div>
+
+    <!-- 完成面板 -->
+    <div id="completePanel" class="hidden">
+      <div class="card chinese-border animate-bounce-in" style="text-align: center; padding: 40px 24px;">
+        <div style="font-size: 5rem;">🏆</div>
+        <h2 class="page-title" style="color: #27AE60;">全部匹配正确！</h2>
+        <div style="margin: 20px 0; font-size: 1.1rem; line-height: 2;">
+          <p>📋 关卡：<strong id="dragLevelName"></strong></p>
+          <p>🔄 总尝试：<strong id="dragTotalAttempts"></strong></p>
+          <p>✅ 正确数：<strong id="dragTotalCorrect"></strong></p>
+        </div>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+          <button class="btn btn-primary" onclick="backToLevelSelect()">🎯 选择关卡</button>
+          <a href="index.html" class="btn btn-ghost">🏠 返回首页</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 错误提示弹窗 -->
+    <div id="errorModal" class="modal-overlay hidden">
+      <div class="modal-content" style="text-align: center; padding: 32px;">
+        <div style="font-size: 4rem; margin-bottom: 12px;">😅</div>
+        <h3 style="color: #E74C3C; margin-bottom: 8px;">匹配错误！</h3>
+        <p id="errorMsg" style="line-height: 1.8;"></p>
+        <button class="btn btn-primary btn-sm" onclick="closeErrorModal()" style="margin-top: 16px;">再试一次！</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== 状态管理 ====================
+    // 全局变量
+    let currentLevelId = -1;
+    let currentLevel = null;
+    let placedCount = 0;
+    let totalItems = 0;
+    let attempts = 0;
+    let correctPlaced = 0;
+    let draggedItemId = null;
+
+    // 接触摸长按拖拽
+    let touchDragItem = null;
+    let touchClone = null;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchMoved = false;
+
+    // ==================== 初始化 ====================
+    const studentName = getStudentName();
+    if (!studentName) {
+      window.location.href = 'index.html';
+    }
+    document.getElementById('studentDisplay').textContent = '👤 ' + studentName;
+
+    // ==================== 选择关卡 ====================
+    function selectLevel(levelId) {
+      currentLevelId = levelId;
+      currentLevel = DRAG_LEVELS[levelId];
+      totalItems = currentLevel.items.length;
+      placedCount = 0;
+      attempts = 0;
+      correctPlaced = 0;
+
+      document.getElementById('levelSelect').classList.add('hidden');
+      document.getElementById('gamePanel').classList.remove('hidden');
+      document.getElementById('completePanel').classList.add('hidden');
+
+      document.getElementById('levelInfo').textContent = '🎮 ' + currentLevel.name;
+      updateStats();
+      buildGameBoard();
+    }
+
+    // ==================== 构建游戏面板 ====================
+    function buildGameBoard() {
+      // 生成待匹配池（随机排列）
+      const shuffledItems = shuffle(currentLevel.items);
+
+      // 渲染左边可拖拽项
+      const itemsPool = document.getElementById('itemsPool');
+      itemsPool.innerHTML = shuffledItems.map(item => `
+        <div class="drag-item" draggable="true"
+             data-item-id="${item.text}"
+             data-target="${item.target}"
+             id="drag-${item.text}"
+             ondragstart="handleDragStart(event)"
+             ondragend="handleDragEnd(event)"
+             ontouchstart="handleTouchStart(event)"
+             ontouchmove="handleTouchMove(event)"
+             ontouchend="handleTouchEnd(event)">
+          <span style="font-size: 1.3rem;">${item.emoji}</span>
+          <span>${item.text}</span>
+        </div>
+      `).join('');
+
+      // 获取所有涉及到的节日
+      const targetFestivals = [...new Set(currentLevel.items.map(item => item.target))];
+
+      // 渲染右边目标区域（按节日顺序）
+      const dropZones = document.getElementById('dropZones');
+      dropZones.innerHTML = targetFestivals.map(fid => {
+        const festival = FESTIVAL_DATA[fid];
+        return `
+          <div class="card" style="padding: 12px 16px;">
+            <h4 style="margin-bottom: 8px; font-size: 1rem; display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 1.5rem;">${festival.emoji}</span>
+              <span style="color: ${festival.color};">${festival.name}</span>
+              <span style="font-size: 0.8rem; color: var(--color-text-light);">${festival.date}</span>
+            </h4>
+            <div class="drop-zone"
+                 data-festival="${fid}"
+                 ondragover="handleDragOver(event)"
+                 ondragleave="handleDragLeave(event)"
+                 ondrop="handleDrop(event)">
+              <span style="color: var(--color-text-light); font-size: 0.85rem;">
+                拖动习俗到这里
+              </span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ==================== 更新统计 ====================
+    function updateStats() {
+      document.getElementById('dragCorrect').textContent = correctPlaced;
+      document.getElementById('dragRemaining').textContent = totalItems - placedCount;
+      document.getElementById('dragAttempts').textContent = attempts;
+      document.getElementById('dragProgress').style.width =
+        (correctPlaced / totalItems * 100) + '%';
+    }
+
+    // ==================== 桌面端拖拽事件 ====================
+    function handleDragStart(e) {
+      draggedItemId = e.target.closest('.drag-item')?.dataset.itemId;
+      if (draggedItemId) {
+        e.target.closest('.drag-item').classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', draggedItemId);
+      }
+    }
+
+    function handleDragEnd(e) {
+      const item = e.target.closest('.drag-item');
+      if (item) item.classList.remove('dragging');
+      draggedItemId = null;
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      e.target.closest('.drop-zone')?.classList.add('drag-over');
+    }
+
+    function handleDragLeave(e) {
+      e.target.closest('.drop-zone')?.classList.remove('drag-over');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      const dropZone = e.target.closest('.drop-zone');
+      if (!dropZone) return;
+      dropZone.classList.remove('drag-over');
+
+      const targetFestival = dropZone.dataset.festival;
+      const itemId = e.dataTransfer.getData('text/plain') || draggedItemId;
+      if (!itemId) return;
+
+      processDrop(itemId, targetFestival, dropZone);
+    }
+
+    // ==================== 移动端触摸拖拽事件 ====================
+    function handleTouchStart(e) {
+      if (e.touches.length !== 1) return;
+      const item = e.target.closest('.drag-item');
+      if (!item || item.classList.contains('placed')) return;
+
+      touchMoved = false;
+      touchDragItem = item;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+
+      item.classList.add('dragging');
+    }
+
+    function handleTouchMove(e) {
+      if (!touchDragItem) return;
+      e.preventDefault();
+
+      const dx = e.touches[0].clientX - touchStartX;
+      const dy = e.touches[0].clientY - touchStartY;
+
+      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+        touchMoved = true;
+        if (!touchClone) {
+          touchClone = touchDragItem.cloneNode(true);
+          touchClone.style.position = 'fixed';
+          touchClone.style.zIndex = '999';
+          touchClone.style.opacity = '0.8';
+          touchClone.style.pointerEvents = 'none';
+          touchClone.style.width = touchDragItem.offsetWidth + 'px';
+          document.body.appendChild(touchClone);
+        }
+        touchClone.style.left = (e.touches[0].clientX - touchClone.offsetWidth / 2) + 'px';
+        touchClone.style.top = (e.touches[0].clientY - 20) + 'px';
+
+        // 高亮下方区域
+        document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over'));
+        const elemBelow = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+        const zoneBelow = elemBelow?.closest('.drop-zone');
+        if (zoneBelow) zoneBelow.classList.add('drag-over');
+      }
+    }
+
+    function handleTouchEnd(e) {
+      if (!touchDragItem) return;
+
+      touchDragItem.classList.remove('dragging');
+      document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over'));
+
+      if (touchClone) {
+        touchClone.remove();
+        touchClone = null;
+      }
+
+      const item = touchDragItem;
+      const itemId = item.dataset.itemId;
+
+      if (touchMoved && itemId) {
+        const touch = e.changedTouches[0];
+        const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+        const zoneBelow = elemBelow?.closest('.drop-zone');
+        if (zoneBelow) {
+          const targetFestival = zoneBelow.dataset.festival;
+          processDrop(itemId, targetFestival, zoneBelow);
+        }
+      }
+
+      touchDragItem = null;
+      touchMoved = false;
+    }
+
+    // ==================== 点击放置（备用方案，移动端也可点击） ====================
+    // 点击左边项再点击右边区域也可放置
+    let selectedItemId = null;
+    document.getElementById('itemsPool').addEventListener('click', function(e) {
+      const item = e.target.closest('.drag-item');
+      if (!item || item.classList.contains('placed')) return;
+
+      // 取消之前的选中
+      document.querySelectorAll('.drag-item.selected-for-drop').forEach(el => {
+        el.classList.remove('selected-for-drop');
+        el.style.outline = '';
+      });
+
+      if (selectedItemId === item.dataset.itemId) {
+        selectedItemId = null;
+      } else {
+        selectedItemId = item.dataset.itemId;
+        item.classList.add('selected-for-drop');
+        item.style.outline = '3px solid var(--color-primary)';
+      }
+    });
+
+    document.getElementById('dropZones').addEventListener('click', function(e) {
+      if (!selectedItemId) return;
+      const zone = e.target.closest('.drop-zone');
+      if (!zone) return;
+
+      const targetFestival = zone.dataset.festival;
+      processDrop(selectedItemId, targetFestival, zone);
+
+      // 取消选中状态
+      document.querySelectorAll('.drag-item.selected-for-drop').forEach(el => {
+        el.classList.remove('selected-for-drop');
+        el.style.outline = '';
+      });
+      selectedItemId = null;
+    });
+
+    // ==================== 处理放置逻辑 ====================
+    function processDrop(itemId, targetFestival, dropZone) {
+      // 找对应的 level item
+      const levelItem = currentLevel.items.find(it => it.text === itemId);
+      if (!levelItem) return;
+
+      attempts++;
+      const isCorrect = levelItem.target === targetFestival;
+
+      if (isCorrect) {
+        // 正确！
+        correctPlaced++;
+        placedCount++;
+        updateStats();
+
+        // 移动卡片到目标区域
+        const dragItem = document.getElementById('drag-' + itemId);
+        if (dragItem) {
+          dragItem.classList.add('placed');
+          dragItem.draggable = false;
+          dragItem.style.cursor = 'default';
+          dragItem.ontouchstart = null;
+          dragItem.ontouchmove = null;
+          dragItem.ontouchend = null;
+
+          // 移除占位文字
+          const placeholder = dropZone.querySelector('span');
+          if (placeholder && dropZone.children.length <= 1) {
+            placeholder.remove();
+          }
+          dropZone.appendChild(dragItem);
+        }
+
+        dropZone.classList.add('correct');
+        setTimeout(() => dropZone.classList.remove('correct'), 800);
+
+        // 检查是否全部完成
+        if (correctPlaced >= totalItems) {
+          setTimeout(showComplete, 600);
+        }
+      } else {
+        // 错误！
+        dropZone.classList.add('wrong');
+        setTimeout(() => dropZone.classList.remove('wrong'), 800);
+
+        updateStats();
+
+        // 显示错误提示
+        const correctFestival = getFestivalName(levelItem.target);
+        document.getElementById('errorMsg').innerHTML =
+          `"<strong>${itemId}</strong>" 对应的正确节日是<br><strong style="font-size: 1.2rem;">${correctFestival}</strong><br>再想想哦~`;
+        document.getElementById('errorModal').classList.remove('hidden');
+      }
+    }
+
+    // ==================== 关闭错误弹窗 ====================
+    function closeErrorModal() {
+      document.getElementById('errorModal').classList.add('hidden');
+    }
+
+    document.getElementById('errorModal').addEventListener('click', function(e) {
+      if (e.target === this) closeErrorModal();
+    });
+
+    // ==================== 显示完成 ====================
+    function showComplete() {
+      document.getElementById('gamePanel').classList.add('hidden');
+      document.getElementById('completePanel').classList.remove('hidden');
+
+      document.getElementById('dragLevelName').textContent = currentLevel.name;
+      document.getElementById('dragTotalAttempts').textContent = attempts;
+      document.getElementById('dragTotalCorrect').textContent = correctPlaced;
+
+      // 保存记录
+      saveLevelRecord('drag', {
+        level: currentLevel.name,
+        totalItems,
+        attempts,
+        correctPlaced,
+      });
+
+      document.getElementById('completePanel').scrollIntoView({ behavior: 'smooth' });
+      createStars();
+    }
+
+    // ==================== 重置关卡 ====================
+    function resetLevel() {
+      selectLevel(currentLevelId);
+    }
+
+    // ==================== 返回关卡选择 ====================
+    function backToLevelSelect() {
+      document.getElementById('gamePanel').classList.add('hidden');
+      document.getElementById('completePanel').classList.add('hidden');
+      document.getElementById('levelSelect').classList.remove('hidden');
+      selectedItemId = null;
+      document.getElementById('levelSelect').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // ==================== 撒花 ====================
+    function createStars() {
+      const emojis = ['⭐', '🌟', '✨', '🎉', '🤝', '🏆', '🎊'];
+      for (let i = 0; i < 25; i++) {
+        setTimeout(() => {
+          const star = document.createElement('span');
+          star.className = 'star-particle';
+          star.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+          star.style.left = Math.random() * 90 + '%';
+          star.style.top = (Math.random() * 40 + 40) + '%';
+          document.body.appendChild(star);
+          setTimeout(() => star.remove(), 1500);
+        }, i * 60);
+      }
+    }
+
+    // ==================== 响应式布局调整 ====================
+    function adjustLayout() {
+      const layout = document.getElementById('dragLayout');
+      if (window.innerWidth < 700) {
+        layout.style.gridTemplateColumns = '1fr';
+      } else {
+        layout.style.gridTemplateColumns = '280px 1fr';
+      }
+    }
+    window.addEventListener('resize', adjustLayout);
+    adjustLayout();
+
+    // ==================== 返回 ====================
+    function goBack() {
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>
