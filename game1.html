@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>第一关 · 节日答题闯关</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="utils.js"></script>
+</head>
+<body>
+  <div class="festival-decoration"></div>
+
+  <!-- 顶部导航 -->
+  <nav class="nav-bar">
+    <button class="nav-back" onclick="goBack()">← 返回首页</button>
+    <span class="nav-title">📝 第一关 · 节日答题闯关</span>
+    <span style="font-size: 0.85rem; color: var(--color-text-light);" id="studentDisplay"></span>
+  </nav>
+
+  <main class="container">
+    <!-- 游戏设置面板 -->
+    <div id="setupPanel" class="animate-fade-in-up">
+      <div class="card chinese-border" style="text-align: center; padding: 40px 24px;">
+        <div style="font-size: 4rem; margin-bottom: 12px;">📝</div>
+        <h2 class="page-title">节日答题闯关</h2>
+        <p class="page-subtitle">
+          从题库中随机抽取题目，测试你对传统节日的了解！
+        </p>
+
+        <div style="margin: 24px 0;">
+          <p style="font-weight: 600; margin-bottom: 12px;">选择题目数量：</p>
+          <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <button class="btn btn-outline btn-sm q-count-btn active" data-count="5">5 题 · 入门</button>
+            <button class="btn btn-outline btn-sm q-count-btn" data-count="10">10 题 · 进阶</button>
+            <button class="btn btn-outline btn-sm q-count-btn" data-count="15">15 题 · 挑战</button>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-lg" onclick="startGame()" style="margin-top: 12px;">
+          🚀 开始答题
+        </button>
+      </div>
+    </div>
+
+    <!-- 答题面板 -->
+    <div id="quizPanel" class="hidden">
+      <!-- 顶部信息栏 -->
+      <div class="card" style="margin-bottom: 16px; padding: 16px 20px;">
+        <div class="flex-between" style="flex-wrap: wrap; gap: 8px;">
+          <span style="font-weight: 700;">
+            📝 第 <span id="currentNum">1</span> / <span id="totalNum">10</span> 题
+          </span>
+          <span style="color: var(--color-success); font-weight: 600;">
+            ✅ 正确：<span id="correctCount">0</span>
+          </span>
+          <span style="color: var(--color-primary); font-weight: 600;">
+            ❌ 错误：<span id="wrongCount">0</span>
+          </span>
+        </div>
+        <div class="progress-bar" style="margin-top: 10px;">
+          <div id="quizProgress" class="progress-fill" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- 题目卡片 -->
+      <div class="card chinese-border animate-fade-in" id="questionCard" style="padding: 28px 24px;">
+        <!-- 节日标签 -->
+        <div style="margin-bottom: 12px;">
+          <span id="festivalBadge" class="festival-badge"></span>
+        </div>
+        <!-- 题目标题 -->
+        <h3 id="questionText" style="font-size: 1.2rem; font-weight: 700; margin-bottom: 20px; line-height: 1.6;"></h3>
+        <!-- 选项列表 -->
+        <div id="optionsList"></div>
+        <!-- 反馈区 -->
+        <div id="feedbackArea" class="hidden" style="margin-top: 16px; padding: 16px; border-radius: 12px;"></div>
+        <!-- 下一题按钮 -->
+        <div style="text-align: center; margin-top: 16px;">
+          <button id="nextBtn" class="btn btn-primary hidden" onclick="nextQuestion()">下一题 →</button>
+          <button id="finishBtn" class="btn btn-success hidden" onclick="showResult()">查看成绩 🎉</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 结果面板 -->
+    <div id="resultPanel" class="hidden">
+      <div class="card chinese-border animate-bounce-in" style="text-align: center; padding: 40px 24px;">
+        <div id="resultEmoji" style="font-size: 5rem; margin-bottom: 12px;"></div>
+        <h2 class="page-title" id="resultTitle"></h2>
+        <div style="margin: 20px 0; font-size: 1.1rem; line-height: 2;">
+          <p>📝 总题数：<strong id="resultTotal"></strong></p>
+          <p>✅ 正确：<strong id="resultCorrect" style="color: #27AE60;"></strong></p>
+          <p>❌ 错误：<strong id="resultWrong" style="color: #E74C3C;"></strong></p>
+          <p>📊 正确率：<strong id="resultAccuracy" style="color: var(--color-primary); font-size: 1.5rem;"></strong></p>
+          <p>📖 错题已自动加入错题本</p>
+        </div>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+          <button class="btn btn-primary" onclick="restartGame()">🔄 再来一局</button>
+          <a href="record.html" class="btn btn-outline">📖 查看错题本</a>
+          <a href="index.html" class="btn btn-ghost">🏠 返回首页</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 知识弹窗 -->
+  <div id="knowledgeModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeKnowledge()">✕</button>
+      <div style="text-align: center; font-size: 3rem; margin-bottom: 12px;">📚</div>
+      <h3 style="font-size: 1.3rem; font-weight: 700; text-align: center; margin-bottom: 16px;">知识点讲解</h3>
+      <p id="knowledgeText" style="line-height: 1.8; font-size: 1rem;"></p>
+      <div style="text-align: center; margin-top: 20px;">
+        <button class="btn btn-primary btn-sm" onclick="closeKnowledge()">我知道了！</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== 状态管理 ====================
+    let questionCount = 5;
+    let questions = [];
+    let currentIndex = 0;
+    let correctCount = 0;
+    let wrongCount = 0;
+    let answeredQuestions = []; // { q, userAnswer, isCorrect }
+    let isAnswered = false;
+
+    // ==================== 初始化 ====================
+    const studentName = getStudentName();
+    if (!studentName) {
+      window.location.href = 'index.html';
+    }
+    document.getElementById('studentDisplay').textContent = '👤 ' + studentName;
+
+    // 题目数量选择
+    document.querySelectorAll('.q-count-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.q-count-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        questionCount = parseInt(this.dataset.count);
+      });
+    });
+
+    // ==================== 开始游戏 ====================
+    function startGame() {
+      // 随机选题目
+      questions = pickRandom(QUIZ_BANK, questionCount);
+      currentIndex = 0;
+      correctCount = 0;
+      wrongCount = 0;
+      answeredQuestions = [];
+
+      document.getElementById('setupPanel').classList.add('hidden');
+      document.getElementById('quizPanel').classList.remove('hidden');
+      document.getElementById('resultPanel').classList.add('hidden');
+
+      document.getElementById('totalNum').textContent = questions.length;
+      renderQuestion();
+    }
+
+    // ==================== 渲染题目 ====================
+    function renderQuestion() {
+      if (currentIndex >= questions.length) {
+        showResult();
+        return;
+      }
+
+      isAnswered = false;
+      const q = questions[currentIndex];
+      const festival = FESTIVAL_DATA[q.festival];
+
+      document.getElementById('currentNum').textContent = currentIndex + 1;
+      document.getElementById('correctCount').textContent = correctCount;
+      document.getElementById('wrongCount').textContent = wrongCount;
+      document.getElementById('quizProgress').style.width =
+        ((currentIndex) / questions.length * 100) + '%';
+
+      // 节日标签
+      const badge = document.getElementById('festivalBadge');
+      badge.textContent = festival.emoji + ' ' + festival.name;
+      badge.style.background = festival.bgColor;
+      badge.style.color = festival.color;
+
+      // 题目
+      document.getElementById('questionText').textContent = q.question;
+
+      // 选项
+      const optionsList = document.getElementById('optionsList');
+      const labels = ['A', 'B', 'C', 'D'];
+      optionsList.innerHTML = q.options.map((opt, i) => `
+        <button class="option-btn" data-index="${i}" onclick="selectAnswer(${i})">
+          <span style="display: inline-block; width: 28px; height: 28px; line-height: 28px;
+                       background: var(--color-bg); border-radius: 50%; text-align: center;
+                       font-weight: 700; font-size: 0.85rem; margin-right: 8px;">${labels[i]}</span>
+          ${opt}
+        </button>
+      `).join('');
+
+      // 隐藏反馈和下一题按钮
+      document.getElementById('feedbackArea').classList.add('hidden');
+      document.getElementById('nextBtn').classList.add('hidden');
+      document.getElementById('finishBtn').classList.add('hidden');
+
+      // 带动画重新渲染题目卡片
+      const card = document.getElementById('questionCard');
+      card.classList.remove('animate-fade-in');
+      void card.offsetWidth;
+      card.classList.add('animate-fade-in');
+    }
+
+    // ==================== 选择答案 ====================
+    function selectAnswer(userIndex) {
+      if (isAnswered) return;
+      isAnswered = true;
+
+      const q = questions[currentIndex];
+      const isCorrect = userIndex === q.answer;
+
+      // 禁用所有选项
+      const allBtns = document.querySelectorAll('.option-btn');
+      allBtns.forEach(b => b.disabled = true);
+
+      // 高亮正确答案
+      allBtns[q.answer].classList.add('correct');
+
+      // 高亮用户选择
+      if (isCorrect) {
+        correctCount++;
+        allBtns[userIndex].classList.add('correct');
+        document.getElementById('correctCount').textContent = correctCount;
+      } else {
+        wrongCount++;
+        allBtns[userIndex].classList.add('wrong');
+        document.getElementById('wrongCount').textContent = wrongCount;
+        // 记录错题
+        saveErrorQuestion({
+          id: q.id,
+          festival: q.festival,
+          question: q.question,
+          options: q.options,
+          correctAnswer: q.answer,
+          userAnswer: userIndex,
+          knowledge: q.knowledge,
+        });
+      }
+
+      // 显示反馈
+      const feedback = document.getElementById('feedbackArea');
+      feedback.classList.remove('hidden');
+      const festival = FESTIVAL_DATA[q.festival];
+      if (isCorrect) {
+        feedback.style.background = '#E8F8F5';
+        feedback.style.border = '1px solid #27AE60';
+        feedback.innerHTML = `
+          <div class="flex-center gap-2" style="margin-bottom: 8px;">
+            <span style="font-size: 1.5rem;">🎉</span>
+            <strong style="color: #27AE60;">回答正确！太棒了！</strong>
+          </div>
+          <p style="color: #2C3E50; line-height: 1.6;">${q.knowledge}</p>
+        `;
+      } else {
+        feedback.style.background = '#FDEDEC';
+        feedback.style.border = '1px solid #E74C3C';
+        feedback.innerHTML = `
+          <div class="flex-center gap-2" style="margin-bottom: 8px;">
+            <span style="font-size: 1.5rem;">😢</span>
+            <strong style="color: #E74C3C;">回答错误！正确答案是：${q.options[q.answer]}</strong>
+          </div>
+          <p style="color: #2C3E50; line-height: 1.6;">${q.knowledge}</p>
+        `;
+      }
+
+      // 记录答题
+      answeredQuestions.push({ q, userAnswer: userIndex, isCorrect });
+
+      // 显示下一题/完成按钮
+      if (currentIndex < questions.length - 1) {
+        document.getElementById('nextBtn').classList.remove('hidden');
+      } else {
+        document.getElementById('finishBtn').classList.remove('hidden');
+      }
+    }
+
+    // ==================== 下一题 ====================
+    function nextQuestion() {
+      currentIndex++;
+      renderQuestion();
+      // 滚动到题目卡片
+      document.getElementById('questionCard').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // ==================== 显示结果 ====================
+    function showResult() {
+      document.getElementById('quizPanel').classList.add('hidden');
+      document.getElementById('resultPanel').classList.remove('hidden');
+
+      const total = questions.length;
+      const accuracy = Math.round((correctCount / total) * 100);
+
+      document.getElementById('resultTotal').textContent = total;
+      document.getElementById('resultCorrect').textContent = correctCount;
+      document.getElementById('resultWrong').textContent = wrongCount;
+      document.getElementById('resultAccuracy').textContent = accuracy + '%';
+
+      // 判断等级
+      let emoji, title;
+      if (accuracy >= 90) {
+        emoji = '🏆'; title = '太厉害了！传统文化小达人！';
+      } else if (accuracy >= 70) {
+        emoji = '🌟'; title = '很不错！继续加油！';
+      } else if (accuracy >= 50) {
+        emoji = '💪'; title = '还需要多学习哦，加油！';
+      } else {
+        emoji = '📚'; title = '没关系，多看看错题本吧！';
+      }
+      document.getElementById('resultEmoji').textContent = emoji;
+      document.getElementById('resultTitle').textContent = title;
+
+      // 保存记录
+      saveQuizRecord({
+        questionCount: total,
+        correctCount,
+        wrongCount,
+        accuracy,
+      });
+
+      // 撒花效果
+      if (accuracy >= 80) {
+        createStars();
+      }
+
+      // 滚动到结果
+      document.getElementById('resultPanel').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // ==================== 重新开始 ====================
+    function restartGame() {
+      document.getElementById('setupPanel').classList.remove('hidden');
+      document.getElementById('quizPanel').classList.add('hidden');
+      document.getElementById('resultPanel').classList.add('hidden');
+    }
+
+    // ==================== 知识弹窗 ====================
+    function closeKnowledge() {
+      document.getElementById('knowledgeModal').classList.add('hidden');
+    }
+
+    // ==================== 撒花动画 ====================
+    function createStars() {
+      const emojis = ['⭐', '🌟', '✨', '🎉', '🎊', '💫', '🏮', '🧧', '🥮'];
+      for (let i = 0; i < 30; i++) {
+        setTimeout(() => {
+          const star = document.createElement('span');
+          star.className = 'star-particle';
+          star.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+          star.style.left = Math.random() * 90 + '%';
+          star.style.top = (Math.random() * 40 + 40) + '%';
+          star.style.fontSize = (Math.random() * 1.5 + 1) + 'rem';
+          document.body.appendChild(star);
+          setTimeout(() => star.remove(), 1500);
+        }, i * 60);
+      }
+    }
+
+    // ==================== 返回 ====================
+    function goBack() {
+      if (document.getElementById('quizPanel').classList.contains('hidden') === false && !isAnswered) {
+        if (confirm('答题还没完成，确定要退出吗？')) {
+          window.location.href = 'index.html';
+        }
+      } else {
+        window.location.href = 'index.html';
+      }
+    }
+  </script>
+</body>
+</html>
